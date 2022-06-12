@@ -1,0 +1,66 @@
+-|
+    df_bg                 : gray23
+    
+    test                  : [ 
+    ]
+    test1                 : [test1, test2]
+
+    test2                 : (
+
+    )
+
+    test3                 : (test1, test2)
+    
+    test4                 : {
+
+    }
+    test5                 : {test1: test2}
+|-
+
+.|
+  preset                  : slim
+  bd                      : 0
+  relief                  : flat
+  highlightthickness      : 0
+|.
+
+.|
+  preset                  : normal
+  bg                      : df_bg
+|.
+
+.|
+  preset                  : destac
+  bg                      : df_destac
+|.
+
+.|
+  preset                  : Text_items_normal
+  font                    : ( font_type , font_size )
+  fg                      : df_fg
+|.
+
+.|
+  preset                  : Text_min
+  font                    : ( font_type , font_stwo )
+  fg                      : df_fg
+|.
+
+<|
+  tk_name                 : __master__
+  
+  {|
+    bg                    : df_bg
+  |}
+
+  [|
+    title                 : Tk_test
+    rowconfigure          : index : 0 , weight : 1
+    columnconfigure       : index : 0 , weight : 1
+  |]
+
+  (|
+    structure             : master : #/__master__/ , r : {px : 10 , py : 10 , sx : 80 , sy : 80 }
+  |)
+  
+|>
