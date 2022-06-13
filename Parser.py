@@ -40,6 +40,11 @@ class WDParser(dict):
     self["wd_vars"]  = {}
     self["presets"]  = []
     self["widgets"]  = []
+    self["comments"] = []
+
+    for p, i in self.Get_section(self.text, "*|", "|*", pointer=True):
+      self["comments"].append("".join(i))
+      self.Remove_from_list(self.text, [(p[0][0], p[1][0])])
 
     for p, i in self.Get_section(self.text, "-|", "|-", pointer=True):
       self["wd_vars"].update(self.Manage_segments(i))
@@ -53,31 +58,31 @@ class WDParser(dict):
       self["widgets"].append(self.Sections_interface(i))
 
   def Sections_interface(self, text):
-    interface_widget = {}
+    interface_widget = {}   # list of widgets configurations
 
-    for name, sp in self.simboly_def_slvs.items():
-      for p, i in self.Get_section(text, sp[0], sp[1], pointer=True):
-        interface_widget[name] = self.Manage_segments(i)
-        self.Remove_from_list(text, [(p[0][0], p[1][0])])
+    for name, sp in self.simboly_def_slvs.items():  # get all defined sibolys slaves  
+      for p, i in self.Get_section(text, sp[0], sp[1], pointer=True): # get text in simbolys
+        interface_widget[name] = self.Manage_segments(i)              # get segments in text
+        self.Remove_from_list(text, [(p[0][0], p[1][0])])             # remove text simboly
 
-    interface_widget["self"] = self.Manage_segments(text)
+    interface_widget["self"] = self.Manage_segments(text) # add segments
+
     return interface_widget
 
   def Remove_from_list(self, sourc : list, remove : list ) -> list:
 
-    removed = []
-    # print(remove)
+    removed = []  # list of line to remove
 
-    for i in remove:
+    for i in remove:  # add lines to removed
       start = i[0]
       end   = i[-1]
 
       removed.extend(list(range(start, end+1)))
     
-    removed.sort()
-    removed.reverse()
+    removed.sort()    # list to incrase
+    removed.reverse() # list to decrase
 
-    for i in removed:
+    for i in removed: # remove lines from source
       sourc.pop(i)
 
   def undefined_slaves(self, segments : list, sp : list | tuple, dict_segments : dict):
