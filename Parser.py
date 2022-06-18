@@ -38,7 +38,7 @@ class WDParser(dict):
     self.widg_bp = []
 
     self["wd_vars"]  = {}
-    self["presets"]  = []
+    self["presets"]  = {}
     self["widgets"]  = []
     self["comments"] = []
 
@@ -51,7 +51,9 @@ class WDParser(dict):
       self.vars_bp.append(p)
 
     for p, i in self.Get_section(self.text, ".|", "|.", pointer=True):
-      self["presets"].append(self.Manage_segments(i))
+      data  = self.Manage_segments(i)
+      self["presets"][data["preset"]] = {k:v for k,v in data.items() if k != "preset"}
+      
       self.pres_bp.append(p)
 
     for p, i in self.Get_section(self.text, "<|", "|>", pointer=True):
