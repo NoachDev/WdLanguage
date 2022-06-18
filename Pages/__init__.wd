@@ -1,20 +1,26 @@
 -|
-    df_bg                 : gray23
+   df_bg                 : gray23
+  df_destac             : gray30
+  df_desabl             : gray55
+  df_fg                 : white
+  font_type             : Caviar Dreams
+  font_size             : 13
+  font_stwo             : 10
     
-    test                  : [ 
-    ]
-    test1                 : [test1, test2]
+  test                  : [ 
+  ]
+  test1                 : [test1, test2]
 
-    test2                 : (
+  test2                 : (
 
-    )
+  )
 
-    test3                 : (test1, test2)
-    
-    test4                 : {
+  test3                 : (test1, test2)
+  
+  test4                 : {
 
-    }
-    test5                 : {test1: test2}
+  }
+  test5                 : {test1: test2}
 |-
 
 .|
@@ -63,4 +69,15 @@
     structure             : master : #/__master__/ , r : {px : 10 , py : 10 , sx : 80 , sy : 80 }
   |)
   
+|>
+
+
+<|
+  tk_name                 : tests
+  tk_type                 : Label
+
+  {|
+    text                  : tests
+  |}
+
 |>
