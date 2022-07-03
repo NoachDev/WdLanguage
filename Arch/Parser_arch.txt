@@ -1,0 +1,72 @@
+
+syntax structure:
+
+  * called section
+
+  comments
+    simboly : *||*
+
+    * inform any things do
+
+  variables
+    simboly : -|line data|-
+
+    * addresing values to names
+
+  presets
+    simboly : .|line data/segment|.
+
+    * stack of atrbuts and layout (ttk style)
+    
+    segments
+      simboly : _||_
+      
+      * use to set style -> layout of ttk widgets
+    
+  widgets
+    simboly : <|line data/segment|>
+
+    * crate and define form, type of tcl widgets
+    
+    segments
+      simboly : {||} 
+        * use to set atrbuts
+      
+      simboly : [||]
+        * use to set inside commands
+
+      simboly : (||)
+        * use to set external commands
+
+  * called line data
+    name : value
+            |______ undefined slave | key name : undefined slave
+                    _______|_______   ____|____  ______|_______
+                        normal           key         value
+                                      ____________|____________
+                                           value with key
+
+    * use "normal"          as arg
+    * use "value with key"  as kwarg
+  
+___________________________________________________________________________________________________|
+
+Diagram:
+  read :
+    right to left
+    " <-- "
+
+
+    |-------> get_text >----------------------------------------> widgets, variables, presets
+    |           |
+    |_______broken in sections _____________________________
+               ||  ||        |-----------||----------------||
+               ||  ||               clear text  get text inside simbolys
+               ||  ||
+  _____________|*  ||
+    get segments __*|
+       ||
+       ||____________ get line data ________
+                                          ||
+                                      str to py
+___________________________________________________________________________________________________|

@@ -1,0 +1,6 @@
+syntax:
+  commnad wdlang
+  -Sd | --Src_Directorys  -> Path
+  -Sf | --Src_Functions   -> Path
+  -Sp | --Src_Pages       -> Path
+
