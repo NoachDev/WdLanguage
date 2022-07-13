@@ -23,7 +23,7 @@ class Files_structure(dict):
 
     for i in pathl:
       if i.is_dir():
-        self.Get_files(i)
+        ret.update(self.Get_files(i))
       else:
         name      = self.Transform_to_tkname(str(i))
 
@@ -37,8 +37,8 @@ class Files_structure(dict):
         self.varspresets["wd_vars"]["__master__"] = name
         wdlang    = WdReader(i, **self.varspresets)
 
-        ret.update({self.Chek_name(name, k) : {**v, "script" : script, "__master__" : name} for k, v in wdlang.widgets.items()})
-
+        ret.update({self.Chek_name(name, k) : {**v, "script" : None, "__master__" : name} for k, v in wdlang.widgets.items()})
+        ret[name]["script"] = script 
         self.varspresets = {"wd_vars" : wdlang.wd_vars, "presets" : wdlang.presets}
 
     return self.Organize(ret)

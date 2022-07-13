@@ -1,13 +1,17 @@
-from .Files import Files_structure
-import tkinter
-import tkinter.ttk
+from . import Files
+from .Tools import WDgets
+
+import tkinter, tkinter.ttk
 
 class Constuct:
-  def __init__(self, Src_app_name : str, Src_app_method , Src_Pages : str, Src_functions : str) -> None:
+  def __init__(self, Src_app_name : str, Src_app_method , Src_Pages : str, Src_functions : str, Src_images) -> None:
     self.masters      : dict  = {Src_app_name : Src_app_method}
-    self.scripts_call : dict  = {} 
+    self.scripts_call : dict  = {}
+    self.Src_Pages    : str   = Src_Pages
+    self.Src_images   : str   = Src_images
+    self.Src_functions: str   = Src_functions
 
-    self.Create_widget(Src_app_method, Files_structure(Src_Pages, Src_functions))
+    self.Create_widget(Src_app_method, Files.Files_structure(Src_Pages, Src_functions))
 
   def Create_widget(self, Src_method, widgets : dict) -> None:
     scripts      : dict = {}
@@ -31,6 +35,10 @@ class Constuct:
         if "ttk." in tk_type:
           module_call = tkinter.ttk
           tk_type = tk_type.replace("ttk.", "")
+
+        elif "widg." in tk_type:
+          module_call = WDgets
+          tk_type = tk_type.replace("widg.", "")
         
         widg = getattr(module_call, tk_type)(master, name = name)
         self.masters[tk_name] = widg
@@ -65,6 +73,9 @@ class Constuct:
         pass
       else:
         widg.configure(**atrbs)
+
+      if "wdlang.Tools" in widg.__module__:
+        widg.wd_update(self, values["self"])
 
       for a in values["segments"]["cmds"]:
         cmds.update(a)
