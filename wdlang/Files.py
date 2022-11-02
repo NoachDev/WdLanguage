@@ -4,17 +4,17 @@ from pathlib import Path
 from importlib.machinery import SourceFileLoader
 
 class Files_structure(dict):
-  def __init__(self, Src_folder : str, Functions : None | str = None):
-    self.Src_folder   : Path        = Path(Src_folder).absolute()
+  def __init__(self, Page_folder : str, Functions : None | str = None):
+    self.Page_folder   : Path        = Path(Page_folder).absolute()
     self.Functions    : None | str  = Functions
     self.varspresets  : dict        = {"wd_vars" : {}, "presets" : {}}
 
     if not self.Functions:
-      self.Functions  : Path        = self.Src_folder.parent.joinpath("Functions")
+      self.Functions  : Path        = self.Page_folder.parent.joinpath("Functions")
     else:
       self.Functions  : Path        = Path(self.Functions)
 
-    self.update(self.Get_files(self.Src_folder))
+    self.update(self.Get_files(self.Page_folder))
 
   def get_script(self, tk_name : str, file, path_rel : Path) -> None:
     script : Path = self.Functions
@@ -53,9 +53,9 @@ class Files_structure(dict):
       if i.is_dir():
         ret.update(self.Get_files(i))
       else:
-        name      = self.Transform_to_tkname(str(i), self.Src_folder)
+        name      = self.Transform_to_tkname(str(i), self.Page_folder)
 
-        script = self.get_script(name, i.name, i.parent.relative_to(self.Src_folder))
+        script = self.get_script(name, i.name, i.parent.relative_to(self.Page_folder))
 
         self.varspresets["wd_vars"]["__master__"] = name
         wdlang    = WdReader(i, **self.varspresets)
