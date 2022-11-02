@@ -1,69 +1,70 @@
+*|                                      playgraund                                        |*
+
+*| symbolys test |*
 -|
-    df_bg                 : gray23
-    df_destac             : gray30
-    df_desabl             : gray55
-    df_fg                 : white
-    font_type             : "Caviar Dreams"
-    font_size             : 13
-    font_stwo             : 10
-    test10                : ((test1), (test2))
+  test01                : ((test0), (test0))
+  test02                : {(test1, [1,2,3]) : (test1), {test : "test1"} : [1, m5, a7]}
+
+  test03                : {test0 : test0}
+  test04                : [test1 , test1]
+  test05                : (test2 , test2)
+|-
+
+*| math test |*
+-|
+  test01                : 100
+  test02                : test01 / 10
+  test03                : (test02 + test01) / 15
+|-
+
+*| -------------------------------------------------------------------------------------  |*
+
+
+-|
+  df_bg                 : gray23
+  df_destac             : gray30
+  df_desabl             : gray55
+  df_fg                 : white
+|-
+
+-|
+  font_family           : "Caviar Dreams"
+  font_size             : 10
+  font                  : (font_family, font_size)
+
 |-
 
 .|
-  preset                  : slim
-  bd                      : 0
-  relief                  : flat
-  highlightthickness      : 0
-|.
-
-.|
-  preset                  : normal
-  bg                      : df_bg
-|.
-
-.|
-  preset                  : destac
-  bg                      : df_destac
-|.
-
-.|
-  preset                  : Text_items_normal
-  font                    : ( font_type , font_size )
-  fg                      : df_fg
-|.
-
-.|
-  preset                  : Text_min
-  font                    : ( font_type , font_stwo )
-  fg                      : df_fg
+  preset                : slim
+  bg                    : df_bg
 |.
 
 <|
-  tk_name                 : __master__
-  
-  {|
-    bg                    : df_bg
-  |}
+  tk_name               : __master__
+  presets               : slim
 
   [|
-    title                 : Tk_test
-    rowconfigure          : 0 | weight : 1
-    columnconfigure       : 0 | weight : 1
+    title               : Tk_test
+    rowconfigure        : 0 | weight : 1
+    columnconfigure     : 0 | weight : 1
   |]
 
 |>
 
 <|
-  tk_name : f_test
-  tk_type : Frame
+  tk_name               : f_test
+  tk_type               : Frame
+
+  presets               : slim
 
   {|
-    bg : df_bg
-    highlightthickness : 2
-    width : 30
-    height : 30
+    highlightthickness  : 2
+    width               : 30
+    height              : 30
   |}
+
   [|
-    place : x : 100, y : 100
+    place               : x : 100, y : 100
   |]
+
 |>
