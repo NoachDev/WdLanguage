@@ -48,51 +48,62 @@ class WdReader:
     sections        : dict  = self.get_section(self.text_file, self.sections_simbolys)
     self.comments   : dict  = sections["comments"]
 
-    # for k, v in self.items():
-    #   print(k)
-    #   print("\t", v)
-
   def get_text_inside(self, text : list, simboly_start : str, simboly_end : str) -> list:
-    start_points, end_points, ret   = [], [], []
-    count_start , count_end , rm    = 0, 0, 0
+    ret, point_start, pairs = [], [], {}
+    rm = 0
 
     for l, t in enumerate(text):
+      slm = max(len(simboly_start), len(simboly_end))
 
-      while simboly_start in t or simboly_end in t:
-        if simboly_start in t:
-          count_start += 1
+      sp = ""
+
+      for i in t:
+        sp += i
+        
+        if len(sp) > slm:
+          sp = sp[1:]
+
+        if sp == simboly_start:
           charpoint = t.find(simboly_start)
-          start_points.append((l, charpoint + rm))
+          point_start.append((l, charpoint + rm))
+
           rm += charpoint+len(simboly_start)
           t = t[charpoint+len(simboly_start):]
-        
-        if simboly_end in t:
-          count_end += 1
+
+        elif sp == simboly_end:
           charpoint = t.find(simboly_end)
-          end_points.append((l, charpoint + rm))
+          ps = point_start[-1]
+
+          if not ps[0] in pairs:
+            pairs[ps[0]] = {} 
+          
+          pairs[ps[0]][ps] = (l, charpoint + rm)
+
+          point_start.remove(ps)
+
           rm += charpoint+len(simboly_end)
           t = t[charpoint+len(simboly_end):]
 
-        if count_start == count_end:
-          index_start , position_start  = start_points[0]
-          index_end   , position_end    = end_points[-1]
-
-          text_inside = [text[a] for a in range(index_start, 1 + index_end)]
-
-          if index_start == index_end:
-            position_end -= position_start
-          
-          text_inside[0]  = text_inside[0]  [position_start + len(simboly_start):]
-          text_inside[-1] = text_inside[-1] [: max(0, position_end)]
-
-          ret.append({"text" : text_inside, "pointers" : (start_points[0], end_points[-1])})
-          
-          start_points  = []
-          end_points    = []
-          count_start   = 0
-          count_end     = 0
       rm = 0
+    
+    for v in pairs.values():
+      k = list(v.keys())
+      k.sort()
 
+      for i in k:
+        index_start , position_start  = i
+        index_end   , position_end    = v[i]
+
+        text_inside = text[index_start : 1 + index_end]
+
+        if index_start == index_end:
+          position_end -= position_start
+        
+        text_inside[0]  = text_inside[0]  [position_start + len(simboly_start):]
+        text_inside[-1] = text_inside[-1] [: max(0, position_end)]
+
+        ret.append({"text" : text_inside, "pointers" : (i, v[i])})
+      
     return ret
 
   def get_section(self, text : list, section_simbolys : dict) -> dict:
@@ -240,7 +251,7 @@ class WdReader:
     unrm_text : str   = text
     rmval     : int   = 0
 
-    while True:
+    for a in range(100):
       try:
         return eval(text, vglobals)
 

@@ -6,6 +6,7 @@
     font_type             : "Caviar Dreams"
     font_size             : 13
     font_stwo             : 10
+    test10                : ((test1), (test2))
 |-
 
 .|
@@ -53,11 +54,16 @@
 |>
 
 <|
-  tk_name                 : test
-  tk_type                 : Button
-  
-  {|
-    bg                    : df_bg
-  |}
+  tk_name : f_test
+  tk_type : Frame
 
+  {|
+    bg : df_bg
+    highlightthickness : 2
+    width : 30
+    height : 30
+  |}
+  [|
+    place : x : 100, y : 100
+  |]
 |>

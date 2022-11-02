@@ -10,11 +10,39 @@ class Files_structure(dict):
     self.varspresets  : dict        = {"wd_vars" : {}, "presets" : {}}
 
     if not self.Functions:
-      self.Functions = self.Src_folder.parent.joinpath("Functions")
+      self.Functions  : Path        = self.Src_folder.parent.joinpath("Functions")
     else:
-      self.Functions = Path(self.Functions)
+      self.Functions  : Path        = Path(self.Functions)
 
     self.update(self.Get_files(self.Src_folder))
+
+  def get_script(self, tk_name : str, file, path_rel : Path) -> None:
+    script : Path = self.Functions
+    name = tk_name.split(sep = ".")[-1]
+
+    if name == "":
+      name = "."
+
+    for i in path_rel.parts:
+      if script.joinpath(i).exists():
+        script  : Path  = script.joinpath(i)
+        tk_name : str   = tk_name.replace(i, "").replace("..", "")
+
+    if script == self.Functions:
+      sfn = "."
+    else:
+      sfn = script.name
+
+    if sfn == name and "__init__" in file:
+      script : Path = script.joinpath("__init__.py")
+    else:
+      script : Path = script.joinpath(tk_name.removeprefix(".") + ".py")
+    
+    if script.exists():
+      return SourceFileLoader("func", str(script)).load_module().Main
+
+    else:
+      return None
 
   def Get_files(self, src : Path) -> dict :
     ret : dict = {}
@@ -25,14 +53,9 @@ class Files_structure(dict):
       if i.is_dir():
         ret.update(self.Get_files(i))
       else:
-        name      = self.Transform_to_tkname(str(i))
+        name      = self.Transform_to_tkname(str(i), self.Src_folder)
 
-        script    =  self.Functions.joinpath(i.parent.relative_to(self.Src_folder)).joinpath(i.name.replace(".wd", "") + ".py")
-
-        if script.exists():
-          script  = SourceFileLoader("func", str(script)).load_module().Main
-        else:
-          script  = None
+        script = self.get_script(name, i.name, i.parent.relative_to(self.Src_folder))
 
         self.varspresets["wd_vars"]["__master__"] = name
         wdlang    = WdReader(i, **self.varspresets)
@@ -43,13 +66,16 @@ class Files_structure(dict):
 
     return self.Organize(ret)
 
-  def Transform_to_tkname(self, widg) -> str:
+  def Transform_to_tkname(self, widg, src) -> str:
     widg = widg.replace(".wd", "").replace("__init__", "")
 
-    ret :str = widg[len(str(self.Src_folder)):].replace("/", ".").replace("\\", ".")
+    ret :str = widg[len(str(src)):].replace("/", ".").replace("\\", ".")
 
-    if ret[-1] == ".":
-      return ret[:max(1, len(ret)-1)]
+    if len(ret) > 1:
+      return ret.removesuffix(".")
+
+    elif len(ret) == 0:
+      ret = "."
     
     return ret
   

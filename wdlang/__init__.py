@@ -18,7 +18,7 @@ class App(tkinter.Tk):
 class main:
   def __init__(self):
     parser = argparse.ArgumentParser()
-    parser.add_argument("-sd", '--Src_Directory', help="use to set Main Path of have folder Pages and Funtions")
+    parser.add_argument("-sd", '--Src_Directory', help="use to set Main Path of have foldera Pages Images and Funtions")
     parser.add_argument("-sf", '--Src_Functions', help="use to set folder Funtions")
     parser.add_argument("-si", '--Src_Images'   , help="use to set folder images")
     parser.add_argument("-sp", '--Src_Pages'    , help="use to set folder Pages")
@@ -51,7 +51,7 @@ class main:
       up = Path(main_path.joinpath(path_name))
 
       if not up.exists():
-        up == None
+        up = None
         
       globals().update(**{path_name : up})
 

@@ -1,5 +1,5 @@
 from . import Files
-from .Tools import WDgets
+from .Tools import WDgets, Functions
 
 import tkinter, tkinter.ttk
 
@@ -10,6 +10,11 @@ class Constuct:
     self.Src_Pages    : str   = Src_Pages
     self.Src_images   : str   = Src_images
     self.Src_functions: str   = Src_functions
+
+    self.src_app = Src_app_method
+
+    self.functions = Functions
+    self.custom_widgets = WDgets
 
     self.Create_widget(Src_app_method, Files.Files_structure(Src_Pages, Src_functions))
 
@@ -29,6 +34,8 @@ class Constuct:
           raise ValueError(master_name, self.masters)
         
         tk_type = values['self']['tk_type']
+        values["self"].pop("tk_type")
+        
         name    : str = tk_name.replace(master_name+".", "").replace(master_name, "")
         module_call   = tkinter
 
@@ -40,7 +47,11 @@ class Constuct:
           module_call = WDgets
           tk_type = tk_type.replace("widg.", "")
         
-        widg = getattr(module_call, tk_type)(master, name = name)
+        for tt in tk_type.split("."):
+          widg = getattr(module_call, tt)
+          module_call = widg
+          
+        widg = widg(master, name = name)
         self.masters[tk_name] = widg
 
       atrbs : dict  = {}
@@ -48,6 +59,7 @@ class Constuct:
 
       if "presets" in values["self"]:
         prest_names = [values["self"]["presets"]]
+        values["self"].pop("presets")
         
         if type(prest_names) == str:
           prest_names = [prest_names]

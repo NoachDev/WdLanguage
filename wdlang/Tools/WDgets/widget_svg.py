@@ -1,38 +1,57 @@
 from tkinter import Canvas
 
-import cairosvg, io
+import cairosvg, io, pathlib
 from PIL import Image, ImageTk
 from xml.etree import ElementTree
 
-class svg(Canvas):
+class Svg(Canvas):
   def __init__(self, *args, **kwargs):
-    super().__init__(*args)
+    kwargs.update(bd = 0, highlightthickness=0)
+    super().__init__(*args, **kwargs)
+    
     self.color_images : dict  = {}
+    self.rotate       : int   = 0
+    self.stroke       : None  = None
+
+    self.ci = self.create_image(0, 0)
 
   def wd_update(self, __main__, values):
 
+    tag     : str   = ""
+    anchor  : str   = "center"
+    fill    : str   = "black"
+    stroke  : str   = ""
+    rotate  : int  = 0
+
+
     if "image" in values:
-      path = self.get_file(values.get("image"), __main__.Src_images)
+      path = pathlib.Path(values.get("image"))
+
+      if not path.exists():
+        path = self.get_file(values.get("image"), __main__.Src_images)
+
     else:
       raise ValueError(values, "image")
 
     if "anchor" in values:
       anchor : str  = values.get("anchor")
       
-    else:
-      anchor : str  = "center"
-
     if "fill" in values:
       fill   : str  = values.get("fill")
 
-    else:
-      fill   : str  = "black"
+    if "tag" in values:
+      tag = values.get("tag")
+
+    if "stroke" in values:
+      stroke : str  = values.get("stroke")
+
+    if "rotate" in values:
+      rotate : int  = values.get("rotate")
 
     if "pad" in values:
       self.padx, self.pady = values.get("pad")
       
     else:
-      
       if "padx" in values:
         self.padx : int = int(values.get("padx"))
       else:
@@ -43,23 +62,27 @@ class svg(Canvas):
       else:
         self.pady : int = 0
 
-    self.configure(bd = 0, highlightthickness=0)
     self.size_w, self.size_h  = self.winfo_reqwidth() - 1, self.winfo_reqheight() - 1
-    self.ci = self.create_image(0, 0)
 
     tree      = ElementTree.parse(open(path, "r"))
     self.root = tree.getroot()
 
-    self.update_svg(fill, anchor)
+    self.update_svg(fill, anchor, stroke = stroke, rotate = rotate, tag = tag)
     self.bind("<Configure>", self.update_size)
 
-  def Load_svg(self, root, fill : str, anchor : str) -> list:
+  def Load_svg(self, root, fill : str, stroke : str, rotate : int, anchor : str) -> list:
 
     root.set("fill", fill)
 
+    if stroke:
+      root.set("stroke", stroke)
+      self.stroke = stroke
+
     svg_paths : cairosvg  = cairosvg.svg2png(bytestring=ElementTree.tostring(root).decode("utf-8"))
     
-    image     : Image     = Image.open(io.BytesIO(svg_paths))
+    image     : Image     = Image.open(io.BytesIO(svg_paths)).rotate(rotate)
+    self.rotate = rotate
+    
     image_tk  : ImageTk   = ImageTk.PhotoImage(image.resize((self.size_w - self.padx, self.size_h - self.pady), Image.ANTIALIAS))
 
     return [image_tk] + self.get_posxy(anchor)
@@ -93,8 +116,8 @@ class svg(Canvas):
 
     return [anchor, x, y]
   
-  def set_image(self, color_name : str, anchor) -> None:
-    img_tk, panchor, x, y  = self.color_images[color_name]
+  def set_image(self, tag : str, anchor) -> None:
+    img_tk, panchor, x, y  = self.color_images[tag]
 
     if anchor and anchor != panchor:
       panchor, x, y = self.get_posxy(anchor)
@@ -104,17 +127,20 @@ class svg(Canvas):
 
     self.image = img_tk
   
-  def update_svg(self, fill, anchor = None, up : bool = False) -> None:
-    self.current_fill = fill
+  def update_svg(self, fill : str, anchor = None, up : bool = False, stroke : str | None = None, rotate : int = 0, tag : str = "" ) -> None:
+    if not tag:
+      tag = fill
 
-    if not fill in self.color_images or up:
-      self.color_images[fill] = self.Load_svg(self.root, fill, anchor)
+    self.current = tag
+
+    if not tag in self.color_images or up:
+      self.color_images[tag] = self.Load_svg(self.root, fill, stroke, rotate, anchor)
     
-    self.set_image(fill, anchor)
+    self.set_image(tag, anchor)
 
   def update_size(self, Event):
     self.size_w, self.size_h = Event.width, Event.height
-    self.update_svg(self.current_fill, self.color_images[self.current_fill][1], up= True)
+    self.update_svg(self.current, self.color_images[self.current][1], up= True, rotate=self.rotate, stroke = self.stroke)
 
   def get_file(self, image, dft_image):
     if dft_image:
