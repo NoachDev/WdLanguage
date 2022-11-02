@@ -8,5 +8,6 @@ setup(
   entry_points={
     "console_scripts" : ["wdlang=wdlang:main"]
     },
+  requires=["cairosvg", "PIL"]
   
 )
