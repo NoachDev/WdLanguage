@@ -1,0 +1,10 @@
+# files of relases
+build/**
+
+# vscode configurations for run and build
+.vscode
+
+# python cache 
+**/__pycache__
+
+test.py
