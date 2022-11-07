@@ -3,8 +3,9 @@
     token
 
   Gramar:
-    bee + tree
+    b tree
 
   Costructor:
     router
-    render
+    render:
+      b+ tree
