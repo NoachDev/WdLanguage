@@ -1,6 +1,5 @@
-#!/bin/python3
+from .wdlang import *
 
-from .tkwd import Constuct
 from pathlib import Path
 
 import argparse, os, tkinter
@@ -55,5 +54,6 @@ class main:
         
       globals().update(**{path_name : up})
 
-if __name__ == "__main__":
-  main()
+__doc__ = wdlang.__doc__
+if hasattr(wdlang, "__all__"):
+	__all__ = wdlang.__all__

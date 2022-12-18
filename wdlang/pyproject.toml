@@ -1,0 +1,20 @@
+[build-system]
+requires = ["maturin>=0.14,<0.15"]
+build-backend = "maturin"
+
+[project]
+name = "wdlang"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = ["tk~=0.1.0"]
+
+
+[project.scripts]
+wdlang = "wdlang:main"
+
+[tool.maturin]
+python-source = "python"
