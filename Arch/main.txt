@@ -1,3 +1,17 @@
+# knhow text simbolys
+
+  * the symboly " * " is for comment / note
+  * the simboly " # " is for idication / index
+  * the simboly " | " is " or "
+
+# knhow Digram simbolys
+  * the simboly "----> "    is a diagram direction
+  * the simboly "  ||  "    is " command " to back on end
+  * the simboly " |lp| "    is a loop
+  * the simboly " !    "    is a external referense
+  * the simboly " !!   "    is a internal referense
+  * the simboly " ??   "    is a possibly value
+
 # rebase
   Lexer:
     token
