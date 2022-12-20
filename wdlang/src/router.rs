@@ -1,12 +1,13 @@
 use std::path::PathBuf;
+use crate::gramma;
 
 pub struct WdTemplate{
   pub name    : String,
 
-  pub widgets : String,
-  pub wd_vars : String,
-  pub presets : String,
-  pub methods : String,
+  pub widgets : Vec<String>,
+  pub wd_vars : Vec<String>,
+  pub presets : Vec<String>,
+  pub methods : Vec<String>,
 
   pub script  : Option<PathBuf>
 }
@@ -33,10 +34,10 @@ impl WdTemplate {
 
     Self{
       name    : name,
-      widgets : "".to_string(),
-      wd_vars : "".to_string(), // add name
-      presets : "".to_string(),
-      methods : "".to_string(),
+      widgets : Vec::new(),
+      wd_vars : Vec::new(), // add name
+      presets : Vec::new(),
+      methods : Vec::new(),
       script  : script
     
     }
@@ -55,7 +56,8 @@ pub fn main( path : & PathBuf, base_fnc : PathBuf, data : & mut Vec<WdTemplate>)
       if entry_path.is_file(){
         let templ = WdTemplate::new(path, &base_fnc);
 
-        println!("this is entry : {:?}", entry_path)
+        gramma::main(entry_path, templ);
+
       }
 
       else{

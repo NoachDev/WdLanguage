@@ -7,6 +7,7 @@ use std::{
 };
 
 mod router;
+mod gramma;
 
 #[pyfunction]
 fn dicovery_dir(main: &str) -> PyResult<&str> {
