@@ -3,15 +3,17 @@ use std::{
   fs::File,
   io::{
     BufReader, prelude::*
-  },
+  }
 };
 
 use crate::router::WdTemplate;
+use crate::lexer;
+
 mod gtypes;
 
 pub fn main(path : PathBuf, template : WdTemplate){
-  // * path ??(/home/user/project/Pages/__init__.wd ) // encoded utf-8 (ascii)
-  // * from path read line 
+  // path ??(/home/user/project/Pages/__init__.wd ) // encoded utf-8 (ascii)
+  // from path read line 
   // get tokens from line 
   // create scopes from tokens 
   // create sub scopes from scopes
@@ -22,11 +24,13 @@ pub fn main(path : PathBuf, template : WdTemplate){
   let file = File::open(&path).expect(&format!("error on read : {}", path.display()));
   let buffer = BufReader::new(&file);
 
-  for line in buffer.lines(){
-    let text = line.unwrap();
+  for (index, line) in buffer.lines().enumerate(){
 
-    // println!("line {}", text);
-    // 
+    // need create comment scope
+    let text = line.unwrap();
+    
+    let token = lexer::main(text, index);
+    // println!("my tokens is  {:?}", token);
 
   }
 
