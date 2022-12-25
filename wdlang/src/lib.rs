@@ -6,9 +6,9 @@ use std::{
   }
 };
 
-mod router;
-mod gramma;
-mod lexer;
+pub mod router;
+pub mod gramma;
+pub mod lexer;
 
 #[pyfunction]
 fn dicovery_dir(main: &str) -> PyResult<&str> {
@@ -18,14 +18,12 @@ fn dicovery_dir(main: &str) -> PyResult<&str> {
   // let wd_imags    : PathBuf = main_path.join("Images");
   // let wd_fonts    : PathBuf = main_path.join("Fonts");
 
-  let mut wd_templates : Vec<router::WdTemplate> = Vec::new();
-  
   // println!("main  path : {:?}", main_path);
   // println!("pages path : {:?}, exist : {}", wd_pages, wd_pages.exists());
   // println!("funct path : {:?}, exist : {}", wd_funct, wd_funct.exists());
 
   if wd_pages.exists() && wd_funct.exists(){
-    router::main(& wd_pages, wd_funct, & mut wd_templates)
+    router::main(& wd_pages, wd_funct);
   }
 
   Ok("")
