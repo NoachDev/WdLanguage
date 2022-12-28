@@ -1,6 +1,6 @@
-use std::{collections::HashMap, char};
+use std::{collections::HashMap};
 use pyo3::PyAny;
-use regex::Regex;
+// use regex::Regex;
 
 #[derive(Debug)]
 pub enum Position{ Start, End, Inline }
@@ -51,28 +51,27 @@ pub enum Token{
 impl DataValue{
   pub fn new(values : String) -> Self{
     fn not_instr(find : &str, text : &String) -> usize{
-      
-      let pattern : Regex = Regex::new(&format!("(?:[\"\'\'].*?[\"\'])|(?P<Cap>[{}])", find)).unwrap();
-      
-      for i in pattern.captures_iter(text){
-        
-        if let Some(find_match) = i.name("Cap"){
-          println!("my index : {}", find_match.start());
-          println!("my text : {}", text);
-
-        }
-      } 
 
       return 0;
     }
 
     let sep_index : usize = not_instr("|", &values);
+    let mut args : Option<Box<[PyAny]>> = None;
+    let mut kwargs: Option<HashMap<String, PyAny>> = None;
 
-    let (str_args, str_kwargs) = values.split_at(sep_index);
+    match sep_index{
+      0 => {},
+      _ => {
+        let (str_args, str_kwargs) = values.split_at(sep_index);
+
+      }
+    }
+
+    
 
     Self {
-      args: Some(Box::new([])),
-      kwargs: Some(HashMap::new())
+      args: args,
+      kwargs: kwargs
     }
 
   }

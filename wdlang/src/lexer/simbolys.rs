@@ -1,6 +1,9 @@
 use super::ltypes;
+use lazy_static::lazy_static;
+use pcre2::bytes::{RegexBuilder, Regex};
 
-pub const SECTIONS : [(&str, &str, ltypes::TypesObject); 5] = [
+
+const SECTIONS : [(&str, &str, ltypes::TypesObject); 5] = [
   ("<", ">", ltypes::TypesObject::Sections(ltypes::TypesSection::Widget)),
   ("&", "&", ltypes::TypesObject::Sections(ltypes::TypesSection::Method)),
   ("-", "-", ltypes::TypesObject::Sections(ltypes::TypesSection::Wdvar)),
@@ -8,7 +11,7 @@ pub const SECTIONS : [(&str, &str, ltypes::TypesObject); 5] = [
   ("*", "*", ltypes::TypesObject::Sections(ltypes::TypesSection::Comment))
 ];
 
-pub const SEGMENTS : [(&str, &str, ltypes::TypesObject); 3] = [
+const SEGMENTS : [(&str, &str, ltypes::TypesObject); 3] = [
   ("(", ")", ltypes::TypesObject::Segments(ltypes::TypesSegment::Atributs)),
   ("[", "]", ltypes::TypesObject::Segments(ltypes::TypesSegment::Commands)),
   ("_", "_", ltypes::TypesObject::Segments(ltypes::TypesSegment::Layouts)),
@@ -20,23 +23,54 @@ pub const LDATA_SEP     : &str = ":"  ;
 pub const GlOBAL_START  : &str = "@(" ;
 pub const GlOBAL_END    : &str = ")"  ;
 
+// const tes_sb : SimbolysObjects = SimbolysObjects{
+//   starts : String::new(),
+//   ends : String::new(),
+//   sblobj : vec![
+
+//   ]
+// };
+
+lazy_static!{
+  pub static ref SBL_SECTIONS   : SimbolysObjects = SimbolysObjects::new(&SECTIONS);
+  pub static ref SBL_SEGMENTS   : SimbolysObjects = SimbolysObjects::new(&SEGMENTS);
+}
+
+lazy_static!{
+  static ref STR_SECTIONS   : String  = format!(r"(?P<Start>[{}])(?:[{}])|(?:[{}])(?P<End>[{}])", SBL_SECTIONS.starts, OBJECTS_ADD, OBJECTS_ADD, SBL_SECTIONS.ends);
+  static ref STR_SEGMENTS   : String  = format!(r"(?P<Start>[{}])(?:[{}])|(?:[{}])(?P<End>[{}])", SBL_SEGMENTS.starts, OBJECTS_ADD, OBJECTS_ADD, SBL_SEGMENTS.ends) ;
+  
+  static ref STR_LD_LOCAL   : String  = format!(r"(?P<LineData>(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*))", LDATA_SEP);
+  static ref STR_LD_GLOBAL  : String  = format!(r"(?:{})(?:[ ]*?)(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*?)(?:{})", GlOBAL_START, LDATA_SEP, GlOBAL_END);
+}
+
+lazy_static!{
+  // RegexBuilder::new().build(r"(?P<LineData>(?P<Key>\w+)(?:[ ]*?):(?:[ ]*?)(?P<Value>.*))").unwrap()
+  pub static ref PATTERNS       : [(&'static str, Regex, Option<&'static SimbolysObjects>); 4] = [
+    ("Local"  , RegexBuilder::new().build(&STR_LD_LOCAL).unwrap() , None),
+    ("Object" , RegexBuilder::new().build(&STR_SECTIONS).unwrap() , SBL_SECTIONS.transform()),
+    ("Object" , RegexBuilder::new().build(&STR_SEGMENTS).unwrap() , SBL_SECTIONS.transform()),
+    ("Global" , RegexBuilder::new().build(&STR_LD_GLOBAL).unwrap(), None),
+  ];
+}
+
 
 #[derive(Debug, PartialEq)]
-pub struct SimbolyObject<'a>{
-  pub start : &'a str,    // expl < | (
-  pub end   : &'a str,    // expl > | )
+pub struct SimbolyObject{
+  pub start : String,    // expl < | (
+  pub end   : String,    // expl > | )
   pub stype : ltypes::TypesObject
 }
 
 #[derive(Debug, PartialEq)]
-pub struct SimbolysObjects<'a>{
+pub struct SimbolysObjects{
   pub starts  : String,
   pub ends    : String,
-  pub sblobj  : Vec<SimbolyObject<'a>>,
+  pub sblobj  : Vec<SimbolyObject>,
 }
 
-impl<'a> SimbolysObjects<'a>{
-  pub fn get_simboly(self, sbl : &str) -> Option<ltypes::TypesObject>{
+impl SimbolysObjects{
+  pub fn get_simboly(&self, sbl : String) -> Option<ltypes::TypesObject>{
 
     for i in self.sblobj.iter(){
       if i.start == sbl{
@@ -51,14 +85,14 @@ impl<'a> SimbolysObjects<'a>{
     return None;
   }
 
-  pub fn new(sbl : &[(&'a str, &'a str, ltypes::TypesObject)]) -> Self{
+  pub fn new(sbl : &[(&str, &str, ltypes::TypesObject)]) -> Self{
     let mut ret     : Vec<SimbolyObject> = Vec::new();
     let mut starts  : String = String::new();
     let mut ends    : String = String::new();
 
     for (start, end, stype) in sbl{
       ret.push(
-        SimbolyObject{ start: start, end: end, stype: *stype }
+        SimbolyObject{ start: start.to_string(), end: end.to_string(), stype: *stype }
       );
 
       starts.push_str(start);
@@ -72,4 +106,7 @@ impl<'a> SimbolysObjects<'a>{
     }
   }
   
+  pub fn transform(&'static self) -> Option<&'static SimbolysObjects>{
+    return Some(self);
+  }
 }

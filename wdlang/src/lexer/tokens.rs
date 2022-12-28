@@ -1,14 +1,14 @@
-use regex::Captures;
+use pcre2::bytes::Captures;
 use crate::lexer;
 
 use super::{*, ltypes::DataValue};
 
-pub fn create_object(capture : Captures, index : usize, class : simbolys::SimbolysObjects, mut text : String ) -> Option<ltypes::Token>{
+pub fn create_object(capture : Captures, index : usize, class : &simbolys::SimbolysObjects, mut text : String ) -> Option<ltypes::Token>{
   
   let mut content : Option<String> = None;
   let mut pos : ltypes::Position;
 
-  let simboly : &str;
+  let simboly : String;
 
   let ind_chr : usize;
 
@@ -18,7 +18,7 @@ pub fn create_object(capture : Captures, index : usize, class : simbolys::Simbol
     pos = ltypes::Position::Start ;
     
     ind_chr = sbl.end()+1;
-    simboly = sbl.as_str() ;
+    simboly = String::from_utf8(sbl.as_bytes().to_vec()).unwrap();
   }
 
   else{
@@ -27,8 +27,8 @@ pub fn create_object(capture : Captures, index : usize, class : simbolys::Simbol
     pos = ltypes::Position::End ;
     
     ind_chr = cap.end();
-    simboly = cap.as_str();
-
+    simboly = String::from_utf8(cap.as_bytes().to_vec()).unwrap();
+    
   }
 
   if let Some(kind) = class.get_simboly(simboly){
@@ -69,8 +69,8 @@ pub fn create_linedata(capture : Captures, index : usize, ldtype : ltypes::Types
       ltypes::LineData{
         line  : index,
         kind  : ltypes::TypesLineData::Local,
-        key   : capture.name("Key").unwrap().as_str().to_string(),
-        value : DataValue::new(capture.name("Value").unwrap().as_str().to_string()),
+        key   : String::from_utf8(capture.name("Key").unwrap().as_bytes().to_vec()).unwrap(),
+        value : DataValue::new(String::from_utf8(capture.name("Value").unwrap().as_bytes().to_vec()).unwrap()),
   
       }
     )
