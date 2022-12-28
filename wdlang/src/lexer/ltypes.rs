@@ -1,5 +1,7 @@
 use std::{collections::HashMap};
 use pyo3::PyAny;
+
+use crate::lexer::simbolys;
 // use regex::Regex;
 
 #[derive(Debug)]
@@ -50,24 +52,56 @@ pub enum Token{
 
 impl DataValue{
   pub fn new(values : String) -> Self{
-    fn not_instr(find : &str, text : &String) -> usize{
+    fn not_instr(text : &String) -> usize{
+      for i in simbolys::FIND_SEP.captures_iter(text.as_bytes()){
+        let cap = i.unwrap();
+        
+        if let Some(find_match) = cap.name("Cap"){
+          return find_match.start();
 
-      return 0;
+        }
+        else if let Some(find_match) = cap.name("kwargs"){
+          return 0;
+        }
+      } 
+
+      return text.len();
     }
 
-    let sep_index : usize = not_instr("|", &values);
+    fn create_kwargs() -> Option<HashMap<String, PyAny>>{
+
+      return None;
+    }
+
+    fn create_args() -> Option<Box<[PyAny]>>{
+      return  None;
+    }
+
+    let sep_index : usize = not_instr(&values);
     let mut args : Option<Box<[PyAny]>> = None;
     let mut kwargs: Option<HashMap<String, PyAny>> = None;
 
     match sep_index{
-      0 => {},
+      0 => {
+        println!("my text kw  : {}", &values);
+        kwargs = create_kwargs();
+      },
+      x if x == values.len() => {
+        println!("my text arg : {}", &values);
+        args = create_args();
+        
+      },
       _ => {
         let (str_args, str_kwargs) = values.split_at(sep_index);
 
+        println!("my text sep  : {}", &values);
+        println!("my index sep : {sep_index}");
+
+        kwargs = create_kwargs();
+        args = create_args();
+
       }
     }
-
-    
 
     Self {
       args: args,

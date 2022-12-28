@@ -17,19 +17,13 @@ const SEGMENTS : [(&str, &str, ltypes::TypesObject); 3] = [
   ("_", "_", ltypes::TypesObject::Segments(ltypes::TypesSegment::Layouts)),
 ];
 
+const DATA_TYPE_SEP     : &str = "|"  ;
+
 pub const OBJECTS_ADD   : &str = "|"  ;
 pub const LDATA_SEP     : &str = ":"  ;
 
-pub const GlOBAL_START  : &str = "@(" ;
-pub const GlOBAL_END    : &str = ")"  ;
-
-// const tes_sb : SimbolysObjects = SimbolysObjects{
-//   starts : String::new(),
-//   ends : String::new(),
-//   sblobj : vec![
-
-//   ]
-// };
+pub const GLOBAL_START  : &str = "@(" ;
+pub const GLOBAL_END    : &str = ")"  ;
 
 lazy_static!{
   pub static ref SBL_SECTIONS   : SimbolysObjects = SimbolysObjects::new(&SECTIONS);
@@ -41,7 +35,7 @@ lazy_static!{
   static ref STR_SEGMENTS   : String  = format!(r"(?P<Start>[{}])(?:[{}])|(?:[{}])(?P<End>[{}])", SBL_SEGMENTS.starts, OBJECTS_ADD, OBJECTS_ADD, SBL_SEGMENTS.ends) ;
   
   static ref STR_LD_LOCAL   : String  = format!(r"(?P<LineData>(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*))", LDATA_SEP);
-  static ref STR_LD_GLOBAL  : String  = format!(r"(?:{})(?:[ ]*?)(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*?)(?:{})", GlOBAL_START, LDATA_SEP, GlOBAL_END);
+  static ref STR_LD_GLOBAL  : String  = format!(r"(?:{})(?:[ ]*?)(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*?)(?:{})", GLOBAL_START, LDATA_SEP, GLOBAL_END);
 }
 
 lazy_static!{
@@ -52,6 +46,16 @@ lazy_static!{
     ("Object" , RegexBuilder::new().build(&STR_SEGMENTS).unwrap() , SBL_SECTIONS.transform()),
     ("Global" , RegexBuilder::new().build(&STR_LD_GLOBAL).unwrap(), None),
   ];
+}
+
+lazy_static!{
+  pub static ref FIND_SEP : Regex = RegexBuilder::new().build(
+    &format!(
+      "(?:[\"\'\'].*?[\"\'])|(?:[{{].*?[}}])|(?P<Cap>[{}])|(?P<kwargs>(?P<Key>\\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*))",
+      DATA_TYPE_SEP,
+      LDATA_SEP
+    )
+  ).unwrap();
 }
 
 
