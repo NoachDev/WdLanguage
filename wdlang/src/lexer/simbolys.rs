@@ -34,7 +34,7 @@ lazy_static!{
   static ref STR_SECTIONS   : String  = format!(r"(?P<Start>[{}])(?:[{}])|(?:[{}])(?P<End>[{}])", SBL_SECTIONS.starts, OBJECTS_ADD, OBJECTS_ADD, SBL_SECTIONS.ends);
   static ref STR_SEGMENTS   : String  = format!(r"(?P<Start>[{}])(?:[{}])|(?:[{}])(?P<End>[{}])", SBL_SEGMENTS.starts, OBJECTS_ADD, OBJECTS_ADD, SBL_SEGMENTS.ends) ;
   
-  static ref STR_LD_LOCAL   : String  = format!(r"(?P<LineData>(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*))", LDATA_SEP);
+  static ref STR_LD_LOCAL   : String  = format!(r"(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*)", LDATA_SEP);
   static ref STR_LD_GLOBAL  : String  = format!(r"(?:{})(?:[ ]*?)(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*?)(?:{})", GLOBAL_START, LDATA_SEP, GLOBAL_END);
 }
 
@@ -51,8 +51,20 @@ lazy_static!{
 lazy_static!{
   pub static ref FIND_SEP : Regex = RegexBuilder::new().build(
     &format!(
-      "(?:[\"\'\'].*?[\"\'])|(?:[{{].*?[}}])|(?P<Cap>[{}])|(?P<kwargs>(?P<Key>\\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*))",
+      "(?:[\"\'].*?[\"\'])|(?P<Cap>[{}])",
       DATA_TYPE_SEP,
+    )
+  ).unwrap();
+
+  pub static ref BROKEN_CH  : Regex = RegexBuilder::new().build(
+    &format!(
+      "([\\\"\\\'\\{{\\[\\(].+?[\\)\\]\\}}\\\'\\\"])|(?P<End>[,])",
+    )
+  ).unwrap();
+
+  pub static ref GET_KW  : Regex = RegexBuilder::new().build(
+    &format!(
+      r"^(?(?!(?:[ ].*?){{.*)(:?[ ]*?)(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*))$",
       LDATA_SEP
     )
   ).unwrap();
@@ -74,6 +86,10 @@ pub struct SimbolysObjects{
 }
 
 impl SimbolysObjects{
+  fn transform(&'static self) -> Option<&'static SimbolysObjects>{
+    return Some(self);
+  }
+
   pub fn get_simboly(&self, sbl : String) -> Option<ltypes::TypesObject>{
 
     for i in self.sblobj.iter(){
@@ -110,7 +126,4 @@ impl SimbolysObjects{
     }
   }
   
-  pub fn transform(&'static self) -> Option<&'static SimbolysObjects>{
-    return Some(self);
-  }
 }
