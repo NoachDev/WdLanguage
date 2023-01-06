@@ -2,7 +2,7 @@ pub mod ltypes;
 mod simbolys;
 mod tokens;
 
-pub fn main(text : String, index  : usize) -> Option<ltypes::Token>{
+pub fn main(text : &String, index  : usize) -> Option<ltypes::Token>{
   // identify patterns
   // debug ( waring ) unreconizied patterns
   // crete tokens
@@ -14,7 +14,7 @@ pub fn main(text : String, index  : usize) -> Option<ltypes::Token>{
 
       match *name{
         "Local"  => return tokens::create_linedata(cap_m, index, ltypes::TypesLineData::Local),
-        "Section" => return tokens::create_object(cap_m, index, class.unwrap(), text.clone()),
+        "Object" => return tokens::create_object(cap_m, index, class.unwrap(), text.clone()),
         "Global" => return tokens::create_linedata(cap_m, index, ltypes::TypesLineData::Global),
         _ => ()
 

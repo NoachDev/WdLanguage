@@ -1,7 +1,6 @@
 use std::{collections::HashMap};
 
 use crate::lexer::simbolys;
-// use regex::Regex;
 
 #[derive(Debug)]
 pub enum Position{ Start, End, Inline }
@@ -29,13 +28,13 @@ pub struct Object{
   pub content : Option<String>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DataValue{
   pub args : Option<Box<[String]>>,
   pub kwargs : Option<HashMap<String, String>>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LineData{
   pub line    : usize,
   pub kind    : TypesLineData,
@@ -96,7 +95,7 @@ impl DataValue{
           let key : String = String::from_utf8_lossy(cap.name("Key").unwrap().as_bytes()).to_string();
           let value : String = String::from_utf8_lossy(cap.name("Value").unwrap().as_bytes()).to_string();
 
-          ret.insert(String::from_utf8_lossy(cap.name("Key").unwrap().as_bytes()).to_string(), String::from_utf8_lossy(cap.name("Value").unwrap().as_bytes()).to_string());
+          ret.insert(key, value);
           
         }
         else{
@@ -115,7 +114,7 @@ impl DataValue{
     }
 
     let sep_index : usize = not_instr(&values);
-    let mut kwargs: Option<HashMap<String, String>>;
+    let kwargs: Option<HashMap<String, String>>;
     let mut args : Option<Box<[String]>> = None;
 
     match sep_index{
@@ -137,8 +136,6 @@ impl DataValue{
 
       }
     }
-
-    println!("my args : {:?}", args);
 
     Self {
       args: args,

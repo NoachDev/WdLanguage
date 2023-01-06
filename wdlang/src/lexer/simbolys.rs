@@ -12,7 +12,7 @@ const SECTIONS : [(&str, &str, ltypes::TypesObject); 5] = [
 ];
 
 const SEGMENTS : [(&str, &str, ltypes::TypesObject); 3] = [
-  ("(", ")", ltypes::TypesObject::Segments(ltypes::TypesSegment::Atributs)),
+  ("{", "}", ltypes::TypesObject::Segments(ltypes::TypesSegment::Atributs)),
   ("[", "]", ltypes::TypesObject::Segments(ltypes::TypesSegment::Commands)),
   ("_", "_", ltypes::TypesObject::Segments(ltypes::TypesSegment::Layouts)),
 ];
@@ -43,7 +43,7 @@ lazy_static!{
   pub static ref PATTERNS       : [(&'static str, Regex, Option<&'static SimbolysObjects>); 4] = [
     ("Local"  , RegexBuilder::new().build(&STR_LD_LOCAL).unwrap() , None),
     ("Object" , RegexBuilder::new().build(&STR_SECTIONS).unwrap() , SBL_SECTIONS.transform()),
-    ("Object" , RegexBuilder::new().build(&STR_SEGMENTS).unwrap() , SBL_SECTIONS.transform()),
+    ("Object" , RegexBuilder::new().build(&STR_SEGMENTS).unwrap() , SBL_SEGMENTS.transform()),
     ("Global" , RegexBuilder::new().build(&STR_LD_GLOBAL).unwrap(), None),
   ];
 }
@@ -90,13 +90,13 @@ impl SimbolysObjects{
     return Some(self);
   }
 
-  pub fn get_simboly(&self, sbl : String) -> Option<ltypes::TypesObject>{
+  pub fn get_simboly(&self, sbl : &String) -> Option<ltypes::TypesObject>{
 
     for i in self.sblobj.iter(){
-      if i.start == sbl{
+      if &i.start == sbl{
         return Some(i.stype)
       }
-      else if i.end == sbl {
+      else if &i.end == sbl {
         return Some(i.stype)
 
       }
@@ -115,8 +115,8 @@ impl SimbolysObjects{
         SimbolyObject{ start: start.to_string(), end: end.to_string(), stype: *stype }
       );
 
-      starts.push_str(start);
-      ends.push_str(end);
+      starts.push_str(&("\\".to_owned() + start));
+      ends.push_str(&("\\".to_owned() + end));
     }
 
     Self {

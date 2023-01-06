@@ -7,6 +7,7 @@ use std::{
 };
 
 use crate::lexer;
+
 pub mod gtypes;
 
 pub fn main(path : PathBuf, base_fnc : &PathBuf) -> gtypes::WdTemplate{
@@ -17,20 +18,22 @@ pub fn main(path : PathBuf, base_fnc : &PathBuf) -> gtypes::WdTemplate{
   // create sub scopes from scopes
   // create elements from scopes and sub scopes
 
-  let templ : gtypes::WdTemplate = gtypes::WdTemplate::new(&path, base_fnc);
-  let scopes: Vec<String> = Vec::new();
+  let mut templ : gtypes::WdTemplate = gtypes::WdTemplate::new(&path, base_fnc);
+  let mut manager : gtypes::ScopesManager = gtypes::ScopesManager::new(&mut templ);
 
   let file : File = File::open(&path).expect(&format!("error on read : {}", path.display()));
   let buffer : BufReader<&File> = BufReader::new(&file);
 
   for (index, line) in buffer.lines().enumerate(){
-
-    // need create comment scope
     let text : String = line.unwrap();
     
-    let token : Option<lexer::ltypes::Token> = lexer::main(text, index);
-    // println!("my tokens is  {:?}", token);
+    if let Some(token) = lexer::main(&text, index){
+      if manager.from_token(token).is_comment{
+        manager.comments.push_str(&text)
+      }
 
+    }
+  
   }
 
   return templ;

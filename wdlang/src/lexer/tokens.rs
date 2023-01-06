@@ -3,7 +3,7 @@ use crate::lexer;
 
 use super::{*, ltypes::DataValue};
 
-pub fn create_object(capture : Captures, index : usize, class : &simbolys::SimbolysObjects, mut text : String ) -> Option<ltypes::Token>{
+pub fn create_object(capture : Captures, index : usize, class : &simbolys::SimbolysObjects, text : String ) -> Option<ltypes::Token>{
   
   let mut content : Option<String> = None;
   let mut pos : ltypes::Position;
@@ -31,13 +31,13 @@ pub fn create_object(capture : Captures, index : usize, class : &simbolys::Simbo
     
   }
 
-  if let Some(kind) = class.get_simboly(simboly){
+  if let Some(kind) = class.get_simboly(&simboly){
     if kind == ltypes::TypesObject::Sections(ltypes::TypesSection::Comment){
       
       let (stext, etext) = text.split_at(ind_chr);
 
       if etext.replace(" ", "").len() > 0{
-        if let Some(ltypes::Token::Object(cnt)) = lexer::main(etext.to_string(), index){
+        if let Some(ltypes::Token::Object(cnt)) = lexer::main(&etext.to_string(), index){
           content = cnt.content;
           pos = ltypes::Position::Inline;
         }
@@ -58,6 +58,7 @@ pub fn create_object(capture : Captures, index : usize, class : &simbolys::Simbo
 
   }
   
+  println!("not in data base of Simbolys Objects : {simboly}");
   return None;
   
 }
@@ -68,7 +69,7 @@ pub fn create_linedata(capture : Captures, index : usize, ldtype : ltypes::Types
     ltypes::Token::LineData(
       ltypes::LineData{
         line  : index,
-        kind  : ltypes::TypesLineData::Local,
+        kind  : ldtype,
         key   : String::from_utf8(capture.name("Key").unwrap().as_bytes().to_vec()).unwrap(),
         value : DataValue::new(String::from_utf8(capture.name("Value").unwrap().as_bytes().to_vec()).unwrap()),
   
