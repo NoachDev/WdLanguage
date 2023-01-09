@@ -31,8 +31,8 @@ lazy_static!{
 }
 
 lazy_static!{
-  static ref STR_SECTIONS   : String  = format!(r"(?P<Start>[{}])(?:[{}])|(?:[{}])(?P<End>[{}])", SBL_SECTIONS.starts, OBJECTS_ADD, OBJECTS_ADD, SBL_SECTIONS.ends);
-  static ref STR_SEGMENTS   : String  = format!(r"(?P<Start>[{}])(?:[{}])|(?:[{}])(?P<End>[{}])", SBL_SEGMENTS.starts, OBJECTS_ADD, OBJECTS_ADD, SBL_SEGMENTS.ends) ;
+  static ref STR_SECTIONS   : String  = format!("((\"\"\".*?\"\"\"|\"\".*?\"\"|\".*?\"))(*SKIP)(*FAIL)|((?P<Start>[{}])(?:[{}])|(?:[{}])(?P<End>[{}]))", SBL_SECTIONS.starts, OBJECTS_ADD, OBJECTS_ADD, SBL_SECTIONS.ends);
+  static ref STR_SEGMENTS   : String  = format!("((\"\"\".*?\"\"\"|\"\".*?\"\"|\".*?\"))(*SKIP)(*FAIL)|((?P<Start>[{}])(?:[{}])|(?:[{}])(?P<End>[{}]))", SBL_SEGMENTS.starts, OBJECTS_ADD, OBJECTS_ADD, SBL_SEGMENTS.ends) ;
   
   static ref STR_LD_LOCAL   : String  = format!(r"(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*)", LDATA_SEP);
   static ref STR_LD_GLOBAL  : String  = format!(r"(?:{})(?:[ ]*?)(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*?)(?:{})", GLOBAL_START, LDATA_SEP, GLOBAL_END);
@@ -41,9 +41,9 @@ lazy_static!{
 lazy_static!{
   // RegexBuilder::new().build(r"(?P<LineData>(?P<Key>\w+)(?:[ ]*?):(?:[ ]*?)(?P<Value>.*))").unwrap()
   pub static ref PATTERNS       : [(&'static str, Regex, Option<&'static SimbolysObjects>); 4] = [
-    ("Local"  , RegexBuilder::new().build(&STR_LD_LOCAL).unwrap() , None),
     ("Object" , RegexBuilder::new().build(&STR_SECTIONS).unwrap() , SBL_SECTIONS.transform()),
     ("Object" , RegexBuilder::new().build(&STR_SEGMENTS).unwrap() , SBL_SEGMENTS.transform()),
+    ("Local"  , RegexBuilder::new().build(&STR_LD_LOCAL).unwrap() , None),
     ("Global" , RegexBuilder::new().build(&STR_LD_GLOBAL).unwrap(), None),
   ];
 }
@@ -90,15 +90,11 @@ impl SimbolysObjects{
     return Some(self);
   }
 
-  pub fn get_simboly(&self, sbl : &String) -> Option<ltypes::TypesObject>{
+  pub fn get_simboly(&self, sbl : &String) -> Option<&SimbolyObject>{
 
     for i in self.sblobj.iter(){
-      if &i.start == sbl{
-        return Some(i.stype)
-      }
-      else if &i.end == sbl {
-        return Some(i.stype)
-
+      if &i.start == sbl || &i.end == sbl{
+        return Some(i)
       }
     }
 

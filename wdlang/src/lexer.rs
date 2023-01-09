@@ -13,8 +13,8 @@ pub fn main(text : &String, index  : usize) -> Option<ltypes::Token>{
     if let Some(cap_m) = capture{
 
       match *name{
-        "Local"  => return tokens::create_linedata(cap_m, index, ltypes::TypesLineData::Local),
         "Object" => return tokens::create_object(cap_m, index, class.unwrap(), text.clone()),
+        "Local"  => return tokens::create_linedata(cap_m, index, ltypes::TypesLineData::Local),
         "Global" => return tokens::create_linedata(cap_m, index, ltypes::TypesLineData::Global),
         _ => ()
 

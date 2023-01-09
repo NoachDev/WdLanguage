@@ -2,7 +2,7 @@ use std::{collections::HashMap};
 
 use crate::lexer::simbolys;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Position{ Start, End, Inline }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -20,7 +20,7 @@ pub enum TypesObject{
   Segments(TypesSegment)
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Object{
   pub line    : usize,
   pub kind    : TypesObject,
@@ -28,13 +28,13 @@ pub struct Object{
   pub content : Option<String>
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DataValue{
   pub args : Option<Box<[String]>>,
   pub kwargs : Option<HashMap<String, String>>
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct LineData{
   pub line    : usize,
   pub kind    : TypesLineData,
