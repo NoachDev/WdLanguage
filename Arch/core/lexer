@@ -1,0 +1,9 @@
+input = ??("test : test1" | "<|" ... )
+
+                    | Object --> (create object)
+                    |
+input |lp| patterns | Local ---> (create line data Local)
+              |     |
+              |     | Global ->  (create line data Global)
+              V
+            output
