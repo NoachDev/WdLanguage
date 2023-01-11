@@ -1,0 +1,13 @@
+# filds of elements
+
+widgets:
+  name  : ["tk_name", "wd_name"]
+  elm_type : ["tk_type", "wd_type"]
+  presets : ["presets"]
+
+presets:
+  name : ["preset"]
+
+methods:
+  name  : ["method"]
+  parmeters : ["parameters"]

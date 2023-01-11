@@ -1,66 +1,155 @@
-use std::{path::PathBuf};
-use crate::lexer::{ltypes::{LineData, TypesObject}, self};
+use serde_yaml;
+use std::{path::PathBuf, collections::HashMap};
+use crate::lexer;
 
-type WdDatas   = Vec<LineData>;
-type ScopeData  = (TypesObject, WdDatas);
+use super::scopes;
+use lazy_static::lazy_static;
 
-pub struct Widget<'a>{
+lazy_static!{
+  static ref ELEMENTS_FILDS : HashMap<String, HashMap<String, Vec<String>>> = serde_yaml::from_str(include_str!("elements.yml")).expect("error on load elements");
+}
+
+#[derive(Debug)]
+pub struct Widget{
   pub name      : String,
   pub master    : Box<[String]>,
 
-  pub presets   : Box<[&'a Preset]>,
+  pub element_type  : Option<String>,
+
+  pub presets   : Box<[String]>,
   
-  pub atributs  : WdDatas,
-  pub commands  : WdDatas,
+  pub atributs  : scopes::WdDatas,
+  pub commands  : scopes::WdDatas,
+
+  pub others    : scopes::WdDatas,
 }
 
+#[derive(Debug)]
 pub struct WdVars{
   __master__ : String,
-  pub others : WdDatas
+  pub others : scopes::WdDatas
 }
 
+#[derive(Debug)]
 pub struct Preset{
   pub name : String,
-  pub others  : WdDatas
+  pub others  : scopes::WdDatas
 }
 
-pub struct Method<'a>{
+#[derive(Debug)]
+pub struct Method{
   pub name : String,
   pub parameters : Box<[String]>,
 
-  pub widget : Widget<'a>
+  pub calls : scopes::WdDatas,
+  pub widget : Widget
 
 }
 
+#[derive(Debug)]
 pub struct WdTemplate{
   pub name    : String,
 
-  pub widgets : Vec<Widget<'static>>,
+  pub widgets : Vec<Widget>,
   pub wd_vars : WdVars,
   pub presets : Vec<Preset>,
-  pub methods : Vec<Method<'static>>,
+  pub methods : Vec<Method>,
 
   pub script  : Option<PathBuf>
 }
 
-#[derive(Default)]
-struct BoxScopes{
-  main_scope : Option<ScopeData>,
-  ld_global  : WdDatas,
-  sub_scopes : Vec<ScopeData>,
-  dest      : bool,
-}
-
-pub struct ScopesManager<'a>{
-  pub comments : String,
-  pub is_comment : bool,
-  comment_count : i8,
-  template : &'a mut WdTemplate,
-  scopes : BoxScopes,
-}
-
 impl WdTemplate {
 
+  fn element_widget(&self, scopes : & mut scopes::BoxScopes) -> Widget{
+    let filds_widget = ELEMENTS_FILDS.get("widgets").unwrap();
+
+    let name  = scopes.find_key(filds_widget.get("name").unwrap()).expect("wdigets need one name (id)").value.args.unwrap().first().unwrap().to_string();
+
+    let presets : Box<[String]> = {  
+      if let Ok(prs) = scopes.find_key(filds_widget.get("presets").unwrap()){
+        prs.value.args.unwrap()
+      }
+      else{
+        Box::new([])
+      }
+    };
+
+    let elm_type : Option<String> = {
+      if let Ok(elm_t) = scopes.find_key(filds_widget.get("elm_type").unwrap()){
+        Some(elm_t.value.args.unwrap().first().unwrap().to_string())
+      }
+      else{
+        None
+      }
+    };
+
+    Widget {
+      name: name,
+      master: Box::new([]),
+      element_type : elm_type,
+      presets: presets,
+      atributs: scopes.get_segments(lexer::ltypes::TypesObject::Segments(lexer::ltypes::TypesSegment::Atributs)),
+      commands: scopes.get_segments(lexer::ltypes::TypesObject::Segments(lexer::ltypes::TypesSegment::Commands)),
+      others : scopes.main_scope.as_mut().unwrap().1.drain(0..).collect()
+    }
+  }
+
+  pub fn create_element_widget(& mut self, scopes : & mut scopes::BoxScopes){
+    self.widgets.push(
+      self.element_widget(scopes)
+    )
+
+  }
+
+  pub fn create_element_wdvars(& mut self, scopes : & mut scopes::BoxScopes){
+    self.wd_vars.others.append(& mut scopes.main_scope.as_mut().unwrap().1)
+  }
+
+  pub fn create_element_preset(& mut self, scopes : & mut scopes::BoxScopes){
+    
+    self.presets.push(
+      Preset{
+        name : scopes.find_key(ELEMENTS_FILDS.get("presets").unwrap().get("name").unwrap()).expect("presets need one name (id)").value.args.unwrap().first().unwrap().to_string(),
+        others : scopes.main_scope.as_mut().unwrap().1.drain(0..).collect()
+      }
+    )
+  }
+
+  pub fn create_element_method(& mut self, scopes : & mut scopes::BoxScopes){
+    let mathod_filds = ELEMENTS_FILDS.get("methods").unwrap();
+
+    let name  = scopes.find_key(mathod_filds.get("name").unwrap()).expect("methods need one name (id)").value.args.unwrap().first().unwrap().to_string();
+    let parm  = {
+      if let Ok(fild) = scopes.find_key(mathod_filds.get("name").unwrap()){
+        fild.value.args.unwrap()
+      }
+      else{
+        Box::new([])
+      }
+    };
+
+    scopes.main_scope.as_mut().unwrap().1.push(
+      lexer::ltypes::LineData {
+        line: 0,
+        kind: lexer::ltypes::TypesLineData::Local,
+        key: ELEMENTS_FILDS.get("wdigets").unwrap().get("name").unwrap().last().unwrap().to_string(),
+        value: lexer::ltypes::DataValue { args: Some(Box::new([name.clone()])), kwargs: None }
+      }
+    );
+
+    self.methods.push(
+      Method{
+        name : name.clone(),
+        parameters : parm,
+        calls : scopes.get_mcalls(name),
+        widget : self.element_widget(scopes)
+        
+      }
+    )
+  }
+
+  
+  
   pub fn new(file : &PathBuf, base_fnc : & PathBuf) -> Self{
 
     fn script_find(path : &PathBuf, name : &String) -> Option<PathBuf>{
@@ -89,143 +178,6 @@ impl WdTemplate {
       script  : script
     
     }
-  }
-
-}
-
-impl BoxScopes{
-  fn get_dest<F>(& mut self, mut func : F)
-
-  where
-    F : FnMut(& mut ScopeData)
-  {
-    match self.dest{
-      false => {func(& mut self.main_scope.as_mut().unwrap())},
-      true => {func(& mut self.sub_scopes.last_mut().unwrap())}
-    }
-
-  }
-
-}
-
-impl<'a> ScopesManager<'a> {
-
-  fn append_data(& mut self, linedata : lexer::ltypes::LineData){
-
-    if self.comment_count == 0 {
-      match linedata.kind{
-        lexer::ltypes::TypesLineData::Local => {
-          self.scopes.get_dest(|dest| {
-            dest.1.push(linedata.clone());
-
-          })
-        },
-        lexer::ltypes::TypesLineData::Global => {
-          self.scopes.ld_global.push(linedata);
-
-        },
-      }
-
-    }
-    
-  }
-
-  fn pos_end(& mut self, kind : lexer::ltypes::TypesObject){
-    match kind{
-      lexer::ltypes::TypesObject::Sections(section_type) => {
-        self.scopes.get_dest(|dest| {
-          if section_type == lexer::ltypes::TypesSection::Comment{
-            self.comment_count -= 1;
-
-            if self.comment_count == 0{
-              self.is_comment = false
-            }
-          }
-          else if self.is_comment == false && kind == dest.0 {
-            match section_type{
-              lexer::ltypes::TypesSection::Widget   => {
-                // self.template.create_element_widget()
-              }
-              lexer::ltypes::TypesSection::Wdvar    => {}
-              lexer::ltypes::TypesSection::Preset   => {}
-              lexer::ltypes::TypesSection::Comment  => {}
-              lexer::ltypes::TypesSection::Method   => {}
-            }
-          }
-        })
-      },
-      lexer::ltypes::TypesObject::Segments(_) => {
-        self.scopes.dest = false
-      }
-    }
-    
-  }
-
-  fn pos_start(& mut self, kind : lexer::ltypes::TypesObject){
-    match kind{
-      lexer::ltypes::TypesObject::Sections(section_type) => {
-        if section_type == lexer::ltypes::TypesSection::Comment{
-          self.comment_count += 1;
-        }
-        else if self.comment_count > 1{
-          self.is_comment = true
-        }
-        else if self.is_comment == false{
-          self.scopes.main_scope = Some((kind, WdDatas::new()))
-        }
-
-      }
-      lexer::ltypes::TypesObject::Segments(_) => {
-        self.scopes.dest = true;
-        self.scopes.sub_scopes.push((kind, WdDatas::new()))
-      }
-    }
-
-  }
-
-  fn create_object(& mut self, object : lexer::ltypes::Object){
-
-    match object.postion{
-      lexer::ltypes::Position::Start => {
-        self.pos_start(object.kind)
-      },
-      
-      lexer::ltypes::Position::End => {
-        self.pos_end(object.kind)
-      },
-
-      lexer::ltypes::Position::Inline => {
-        if self.comment_count == 0{
-          self.comments = object.content.unwrap()
-        }
-      }
-    }
-  }
-
-  pub fn from_token(& mut self, token : lexer::ltypes::Token) -> & Self{
-    match token{
-      lexer::ltypes::Token::Object(object) => {
-        self.create_object(object);
-      },
-
-      lexer::ltypes::Token::LineData(ldata) => {
-        self.append_data(ldata)
-      },
-    }
-
-    return self;
-
-  }
-  
-  pub fn new(templ : &'a mut WdTemplate) -> Self{
-    return Self{
-      comments : String::new(),
-      comment_count : 0,
-      template : templ,
-      scopes : BoxScopes::default(),
-      is_comment : false
-    }
-
   }
 
 }

@@ -8,6 +8,11 @@ edition = "2021"
 name = "wdlang"
 
 [dependencies]
+
 pyo3 = { version = "0.17.3", features = ["extension-module", "generate-import-lib"] }
+
 lazy_static = "1.4"
 pcre2 = "0.2"
+
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"

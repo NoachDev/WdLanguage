@@ -9,6 +9,7 @@ use std::{
 use crate::lexer;
 
 pub mod gtypes;
+mod scopes;
 
 pub fn main(path : PathBuf, base_fnc : &PathBuf) -> gtypes::WdTemplate{
   // path ??(/home/user/project/Pages/__init__.wd ) // encoded utf-8 (ascii)
@@ -19,7 +20,7 @@ pub fn main(path : PathBuf, base_fnc : &PathBuf) -> gtypes::WdTemplate{
   // create elements from scopes and sub scopes
 
   let mut templ : gtypes::WdTemplate = gtypes::WdTemplate::new(&path, base_fnc);
-  let mut manager : gtypes::ScopesManager = gtypes::ScopesManager::new(&mut templ);
+  let mut manager : scopes::ScopesManager = scopes::ScopesManager::new(&mut templ);
 
   let file : File = File::open(&path).expect(&format!("error on read : {}", path.display()));
   let buffer : BufReader<&File> = BufReader::new(&file);
@@ -29,7 +30,7 @@ pub fn main(path : PathBuf, base_fnc : &PathBuf) -> gtypes::WdTemplate{
     
     if let Some(token) = lexer::main(&text, index){
       if manager.from_token(token).is_comment{
-        manager.comments.push_str(&text)
+        manager.append_comment(&text)
       }
 
     }
