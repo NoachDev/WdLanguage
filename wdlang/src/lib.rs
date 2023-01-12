@@ -23,7 +23,7 @@ fn dicovery_dir(main: &str) -> PyResult<&str> {
   // println!("funct path : {:?}, exist : {}", wd_funct, wd_funct.exists());
 
   if wd_pages.exists() && wd_funct.exists(){
-    router::main(& wd_pages, wd_funct);
+    router::main(& wd_pages, wd_funct, ".".to_string());
   }
 
   Ok("")

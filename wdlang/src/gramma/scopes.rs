@@ -7,9 +7,8 @@ type ScopeData  = (TypesObject, WdDatas);
 #[derive(Default)]
 pub struct BoxScopes{
   pub main_scope  : Option<ScopeData>,
-  ld_global   : WdDatas,
+  pub comments    : Vec<String>,
   sub_scopes  : Vec<ScopeData>,
-  comments    : String,
   dest        : bool,
 }
 
@@ -31,7 +30,7 @@ impl BoxScopes{
 
     }
 
-    return Err(format!("obrigatory one of this filds : {:?}", find));
+    return Err(format!("obrigatory one of this fields : {:?}", find));
   }
 
   pub fn get_segments(& mut self, segm : TypesObject) -> WdDatas{
@@ -47,17 +46,6 @@ impl BoxScopes{
 
   }
 
-  pub fn get_mcalls(& mut self, name : String) -> WdDatas{
-    let mut ret : Vec<usize>= Vec::new();
-    
-    for (i, ld) in self.ld_global.iter_mut().enumerate(){
-      if ld.key == name{
-        ret.push(i);
-      }
-    }
-
-    return ret.iter().map(|x| self.ld_global.remove(*x)).collect();
-  }
   fn get_dest<F>(& mut self, mut func : F)
 
   where
@@ -78,27 +66,33 @@ impl<'a> ScopesManager<'a> {
       lexer::ltypes::TypesSection::Widget   => {
         self.template.create_element_widget(& mut self.scopes)
       }
-      lexer::ltypes::TypesSection::Wdvar    => {}
-      lexer::ltypes::TypesSection::Preset   => {}
-      lexer::ltypes::TypesSection::Comment  => {}
-      lexer::ltypes::TypesSection::Method   => {}
+      lexer::ltypes::TypesSection::Wdvar    => {
+        self.template.create_element_wdvars(& mut self.scopes)
+      }
+      lexer::ltypes::TypesSection::Preset   => {
+        self.template.create_element_preset(& mut self.scopes)
+      }
+      lexer::ltypes::TypesSection::Method   => {
+        self.template.create_element_method(& mut self.scopes)
+        
+      },
+      _ => {}
     }
 
-    self.scopes.sub_scopes.clear();
   }
   
   fn append_data(& mut self, linedata : lexer::ltypes::LineData){
-
+    
     if self.comment_count == 0 {
       match linedata.kind{
         lexer::ltypes::TypesLineData::Local => {
           self.scopes.get_dest(|dest| {
             dest.1.push(linedata.clone());
-
+            
           })
         },
         lexer::ltypes::TypesLineData::Global => {
-          self.scopes.ld_global.push(linedata);
+          self.template.call_method(linedata)
 
         },
       }
@@ -118,7 +112,9 @@ impl<'a> ScopesManager<'a> {
           }
         }
         else if self.is_comment == false{
-          self.create_elements(section_type)
+          self.create_elements(section_type);
+          self.scopes.sub_scopes.clear();
+          self.scopes.comments.clear()
           
         }
       },
@@ -126,6 +122,7 @@ impl<'a> ScopesManager<'a> {
         self.scopes.dest = false
       }
     }
+
     
   }
 
@@ -164,14 +161,14 @@ impl<'a> ScopesManager<'a> {
 
       lexer::ltypes::Position::Inline => {
         if self.comment_count == 0{
-          self.append_comment(&object.content.unwrap())
+          self.append_comment(object.content.unwrap())
         }
       }
     }
   }
 
-  pub fn append_comment(& mut self, text : &String){
-    self.scopes.comments.push_str(text)
+  pub fn append_comment(& mut self, text : String){
+    self.scopes.comments.push(text)
   }
 
   pub fn from_token(& mut self, token : lexer::ltypes::Token) -> & Self{

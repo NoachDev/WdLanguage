@@ -2,10 +2,10 @@
 
 *| symbolys test |*
 -|
-  test01                : ((test0), (test0))
-  test02                : {(test1, [1,2,3]) : (test1), {test : "test1"} : [1, m5, a7]}
+  test01                : {test : "<|", test1 : "|-", [abc, xyz]} | kwarg : value , kwarg1 : "[test, second, 1]", kwarg2 : and
+  test02                : {(test1, [1,2,3]) : (test1), {dict : "test1"} : [1, m5, a7]} | only : one
 
-  test03                : {test0 : test0}
+  test03                : {testd : test0}
   test04                : [test1 , test1]
   test05                : (test2 , test2)
 |-
@@ -16,6 +16,25 @@
   test02                : test01 / 10
   test03                : (test02 + test01) / 15
 |-
+
+&|
+  method                : test
+  parameters            : arg1, arg2, arg3
+  
+  wd_type               : Frame
+  presets               : testa, ::arg3
+
+  {|
+    width               : ::arg1
+  |}
+
+  [|
+    grid                : row : ::arg2, column : 0
+  |]
+
+|&
+
+@(test : 500, 0, testb)
 
 *| -------------------------------------------------------------------------------------  |*
 
@@ -52,10 +71,10 @@
 |>
 
 <|
-  tk_name               : f_test
-  tk_type               : Frame
+  wd_name               : f_test
+  wd_type               : Frame
 
-  presets               : slim
+  presets               : slim, test1
 
   {|
     highlightthickness  : 2

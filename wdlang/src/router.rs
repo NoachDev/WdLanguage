@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use crate::gramma;
 
-pub fn main( path : & PathBuf, base_fnc : PathBuf) -> Vec<gramma::gtypes::WdTemplate>{
+pub fn main( path : & PathBuf, base_fnc : PathBuf, master : String) -> Vec<gramma::gtypes::WdTemplate>{
   // identify path type
   // for file type execute gramma
   // for dir type do recursive method
@@ -13,12 +13,14 @@ pub fn main( path : & PathBuf, base_fnc : PathBuf) -> Vec<gramma::gtypes::WdTemp
       let entry_path = entry.path();
 
       if entry_path.is_file(){
-        data.push(gramma::main(entry_path, &base_fnc));
+        data.push(gramma::main(entry_path, &base_fnc, &master));
 
       }
 
       else{
-        let mut data_new = main(&entry_path, base_fnc.join(entry_path.file_name().unwrap().to_str().unwrap().to_string()));
+        let name = entry_path.file_name().unwrap().to_str().unwrap();
+
+        let mut data_new = main(&entry_path, base_fnc.join(name.to_string()), master.clone() + name);
         // data.append(data_new)
         data.append(& mut data_new);
 

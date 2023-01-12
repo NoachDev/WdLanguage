@@ -1,4 +1,4 @@
-# filds of elements
+# fields of elements
 
 widgets:
   name  : ["tk_name", "wd_name"]

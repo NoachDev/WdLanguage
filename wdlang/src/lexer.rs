@@ -1,5 +1,5 @@
 pub mod ltypes;
-mod simbolys;
+pub mod simbolys;
 mod tokens;
 
 pub fn main(text : &String, index  : usize) -> Option<ltypes::Token>{
@@ -14,8 +14,8 @@ pub fn main(text : &String, index  : usize) -> Option<ltypes::Token>{
 
       match *name{
         "Object" => return tokens::create_object(cap_m, index, class.unwrap(), text.clone()),
-        "Local"  => return tokens::create_linedata(cap_m, index, ltypes::TypesLineData::Local),
         "Global" => return tokens::create_linedata(cap_m, index, ltypes::TypesLineData::Global),
+        "Local"  => return tokens::create_linedata(cap_m, index, ltypes::TypesLineData::Local),
         _ => ()
 
       }

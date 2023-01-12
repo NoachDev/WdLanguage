@@ -50,7 +50,8 @@ fn lexer_objects(){
 fn lexer_ldatas(){
   let texts : Vec<(LineData, &str)> = vec![
     (LineData{line : 0, kind : TypesLineData::Local, key : "test".to_string(), value : DataValue::new(" abc".to_string())}, " test : abc"),
-    (LineData{line : 0, kind : TypesLineData::Local, key : "test01".to_string(), value : DataValue::new(" {test : \"<|\", test1 : \"|-\", [abc, xyz]} | kwarg : value , kwarg1 : \"[test, second, 1]\", kwarg2 : and".to_string())}, " test01 : {test : \"<|\", test1 : \"|-\", [abc, xyz]} | kwarg : value , kwarg1 : \"[test, second, 1]\", kwarg2 : and"),
+    (LineData{line : 0, kind : TypesLineData::Local, key : "test01".to_string(), value : DataValue::new(" {test : \"<|\", test1 : \"|-\", (abc, xyz)} | kwarg : value , kwarg1 : \"[test, second, 1]\", kwarg2 : and".to_string())}, " test01 : {test : \"<|\", test1 : \"|-\", (abc, xyz)} | kwarg : value , kwarg1 : \"[test, second, 1]\", kwarg2 : and"),
+    (LineData{line : 0, kind : TypesLineData::Global, key : "test".to_string(), value : DataValue::new("500, 0, testb".to_string())}, "  @(test : 500, 0, testb)"),
   ];
   
   for (esp, text) in texts.iter(){

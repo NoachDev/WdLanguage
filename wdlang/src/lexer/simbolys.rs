@@ -22,7 +22,7 @@ const DATA_TYPE_SEP     : &str = "|"  ;
 pub const OBJECTS_ADD   : &str = "|"  ;
 pub const LDATA_SEP     : &str = ":"  ;
 
-pub const GLOBAL_START  : &str = "@(" ;
+pub const GLOBAL_START  : &str = "@[(]" ;
 pub const GLOBAL_END    : &str = ")"  ;
 
 lazy_static!{
@@ -35,7 +35,7 @@ lazy_static!{
   static ref STR_SEGMENTS   : String  = format!("((\"\"\".*?\"\"\"|\"\".*?\"\"|\".*?\"))(*SKIP)(*FAIL)|((?P<Start>[{}])(?:[{}])|(?:[{}])(?P<End>[{}]))", SBL_SEGMENTS.starts, OBJECTS_ADD, OBJECTS_ADD, SBL_SEGMENTS.ends) ;
   
   static ref STR_LD_LOCAL   : String  = format!(r"(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*)", LDATA_SEP);
-  static ref STR_LD_GLOBAL  : String  = format!(r"(?:{})(?:[ ]*?)(?P<Key>\w+)(?:[ ]*?){}(?:[ ]*?)(?P<Value>.*?)(?:{})", GLOBAL_START, LDATA_SEP, GLOBAL_END);
+  static ref STR_LD_GLOBAL  : String  = format!(r"(?<={})(\s*(?'Key'\w+)\s*[{}]\s*(?'Value'.*?))(?=[{}])", GLOBAL_START, LDATA_SEP, GLOBAL_END);
 }
 
 lazy_static!{
@@ -43,8 +43,8 @@ lazy_static!{
   pub static ref PATTERNS       : [(&'static str, Regex, Option<&'static SimbolysObjects>); 4] = [
     ("Object" , RegexBuilder::new().build(&STR_SECTIONS).unwrap() , SBL_SECTIONS.transform()),
     ("Object" , RegexBuilder::new().build(&STR_SEGMENTS).unwrap() , SBL_SEGMENTS.transform()),
-    ("Local"  , RegexBuilder::new().build(&STR_LD_LOCAL).unwrap() , None),
     ("Global" , RegexBuilder::new().build(&STR_LD_GLOBAL).unwrap(), None),
+    ("Local"  , RegexBuilder::new().build(&STR_LD_LOCAL).unwrap() , None),
   ];
 }
 
