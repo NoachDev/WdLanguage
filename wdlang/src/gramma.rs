@@ -10,6 +10,7 @@ use crate::lexer;
 
 pub mod gtypes;
 mod scopes;
+use super::router::{ROOT_WD, SEP_WD};
 
 pub fn main(path : PathBuf, base_fnc : &PathBuf, master : &String) -> gtypes::WdTemplate{
   // path ??(/home/user/project/Pages/__init__.wd ) // encoded utf-8 (ascii)

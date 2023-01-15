@@ -2,7 +2,7 @@ use serde_yaml;
 use std::{path::PathBuf, collections::HashMap};
 use crate::lexer;
 
-use super::scopes;
+use super::{scopes, ROOT_WD, SEP_WD};
 use lazy_static::lazy_static;
 
 lazy_static!{
@@ -172,13 +172,18 @@ impl WdTemplate {
     let script    : Option<PathBuf> = script_find(base_fnc, &name);
 
     if name == "__init__"{
-      name = file.parent().unwrap().file_name().unwrap().to_ascii_lowercase().to_str().unwrap().to_string();
-      if name == "pages"{
-        name = String::new();
-      }
+      name = String::new()
     }
 
-    name = master.to_string() + &name;
+    else{
+      name = SEP_WD.to_owned() + &name;
+    }
+
+    name =  master.to_string() + &name;
+
+    if name.len() == 0{
+      name = ROOT_WD.to_string();
+    }
 
     Self{
       name    : name.clone(),

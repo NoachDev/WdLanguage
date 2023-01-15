@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 use crate::gramma;
 
+pub const ROOT_WD : &str = ".";
+pub const SEP_WD : &str = ".";
+
 pub fn main( path : & PathBuf, base_fnc : PathBuf, master : String) -> Vec<gramma::gtypes::WdTemplate>{
   // identify path type
   // for file type execute gramma
@@ -20,7 +23,7 @@ pub fn main( path : & PathBuf, base_fnc : PathBuf, master : String) -> Vec<gramm
       else{
         let name = entry_path.file_name().unwrap().to_str().unwrap();
 
-        let mut data_new = main(&entry_path, base_fnc.join(name.to_string()), master.clone() + name);
+        let mut data_new = main(&entry_path, base_fnc.join(name.to_string()), master.clone() + SEP_WD + name);
         // data.append(data_new)
         data.append(& mut data_new);
 
