@@ -76,7 +76,7 @@ fn verify_presets(presets : Vec<gramma::gtypes::Preset>){
 
 fn verify_methods(methods : Vec<gramma::gtypes::Method>){
   let list_names = ["test"];
-  let list_parm : [Box<[String]>;1]= [Box::new([" arg1".to_string(), " arg2".to_string(), " arg3".to_string()])];
+  let list_parm : [Vec<String>;1]= [vec![" arg1".to_string(), " arg2".to_string(), " arg3".to_string()]];
   let list_calls = [1];
 
   for (m, ((exp_n, exp_p), call)) in methods.iter().zip(list_names.iter().zip(list_parm.iter()).zip(list_calls)){

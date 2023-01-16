@@ -8,7 +8,7 @@ pub fn main( path : & PathBuf, base_fnc : PathBuf, master : String) -> Vec<gramm
   // identify path type
   // for file type execute gramma
   // for dir type do recursive method
-
+  
   let mut data : Vec<gramma::gtypes::WdTemplate> = Vec::new();
 
   for i in path.read_dir().expect(&format!("error on read dir Pages : {}", path.display())){
@@ -24,7 +24,6 @@ pub fn main( path : & PathBuf, base_fnc : PathBuf, master : String) -> Vec<gramm
         let name = entry_path.file_name().unwrap().to_str().unwrap();
 
         let mut data_new = main(&entry_path, base_fnc.join(name.to_string()), master.clone() + SEP_WD + name);
-        // data.append(data_new)
         data.append(& mut data_new);
 
       }

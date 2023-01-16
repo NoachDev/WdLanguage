@@ -1,3 +1,4 @@
+use pyo3::pyclass;
 use serde_yaml;
 use std::{path::PathBuf, collections::HashMap};
 use crate::lexer;
@@ -9,52 +10,78 @@ lazy_static!{
   pub static ref ELEMENTS_FIELDS : HashMap<String, HashMap<String, Vec<String>>> = serde_yaml::from_str(include_str!("elements.yml")).expect("error on load elements");
 }
 
-#[derive(Debug, PartialEq)]
+#[pyclass]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Widget{
+  #[pyo3(get)]
   pub name      : String,
+  #[pyo3(get)]
   pub element_type  : Option<String>,
 
-  pub presets   : Box<[String]>,
+  #[pyo3(get)]
+  pub presets   : Vec<String>,
   
+  #[pyo3(get)]
   pub atributs  : scopes::WdDatas,
+  #[pyo3(get)]
   pub commands  : scopes::WdDatas,
 
+  #[pyo3(get)]
   pub others    : scopes::WdDatas,
 
+  #[pyo3(get)]
   pub comments  : String
 }
 
-#[derive(Debug)]
+#[pyclass]
+#[derive(Debug, Clone)]
 pub struct WdVars{
+  #[pyo3(get)]
   pub __master__ : String,
+  #[pyo3(get)]
   pub others : scopes::WdDatas
 }
 
-#[derive(Debug)]
+#[pyclass]
+#[derive(Debug, Clone)]
 pub struct Preset{
+  #[pyo3(get)]
   pub name : String,
+  #[pyo3(get)]
   pub others  : scopes::WdDatas
 }
 
-#[derive(Debug)]
+#[pyclass]
+#[derive(Debug, Clone)]
 pub struct Method{
+  #[pyo3(get)]
   pub name : String,
-  pub parameters : Box<[String]>,
+  #[pyo3(get)]
+  pub parameters : Vec<String>,
 
+  #[pyo3(get)]
   pub calls : scopes::WdDatas,
+  #[pyo3(get)]
   pub widget : Widget
 
 }
 
+#[pyclass(dict)]
 #[derive(Debug)]
 pub struct WdTemplate{
+  #[pyo3(get)]
   pub name    : String,
 
+  #[pyo3(get)]
   pub widgets : Vec<Widget>,
+  #[pyo3(get)]
   pub wd_vars : WdVars,
+  #[pyo3(get)]
   pub presets : Vec<Preset>,
+  #[pyo3(get)]
   pub methods : Vec<Method>,
-
+  
+  #[pyo3(get)]
   pub script  : Option<PathBuf>
 }
 
@@ -65,12 +92,12 @@ impl WdTemplate {
 
     let name  = scopes.find_key(fields_widget.get("name").unwrap()).expect("wdigets need one name (id)").value.args.unwrap().first().unwrap().trim().to_lowercase();
 
-    let presets : Box<[String]> = {  
+    let presets : Vec<String> = {  
       if let Ok(prs) = scopes.find_key(fields_widget.get("presets").unwrap()){
         prs.value.args.unwrap()
       }
       else{
-        Box::new([])
+        Vec::new()
       }
     };
 
@@ -124,7 +151,7 @@ impl WdTemplate {
         field.value.args.unwrap()
       }
       else{
-        Box::new([])
+        Vec::new()
       }
     };
 
@@ -133,7 +160,7 @@ impl WdTemplate {
         line: 0,
         kind: lexer::ltypes::TypesLineData::Local,
         key: ELEMENTS_FIELDS.get("widgets").unwrap().get("name").unwrap().last().unwrap().to_string(),
-        value: lexer::ltypes::DataValue { args: Some(Box::new([name.clone()])), kwargs: None }
+        value: lexer::ltypes::DataValue { args: Some(vec![name.clone()]), kwargs: None }
       }
     );
 
@@ -156,6 +183,7 @@ impl WdTemplate {
       }
     }
   }
+  
   pub fn new(file : &PathBuf, base_fnc : & PathBuf, master : &String) -> Self{
 
     fn script_find(path : &PathBuf, name : &String) -> Option<PathBuf>{

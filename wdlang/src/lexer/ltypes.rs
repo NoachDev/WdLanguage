@@ -1,5 +1,7 @@
 use std::{collections::HashMap};
 
+use pyo3::{pyclass, IntoPy};
+
 use crate::lexer::simbolys;
 
 #[derive(Debug, PartialEq)]
@@ -10,7 +12,6 @@ pub enum TypesSection{ Comment, Widget, Preset, Method, Wdvar }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TypesSegment{ Atributs, Commands, Layouts }
-
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TypesLineData{ Local, Global }
 
@@ -28,17 +29,24 @@ pub struct Object{
   pub content : Option<String>
 }
 
+#[pyclass]
 #[derive(Debug, Clone, PartialEq)]
 pub struct DataValue{
-  pub args : Option<Box<[String]>>,
+  #[pyo3(get)]
+  pub args : Option<Vec<String>>,
+  #[pyo3(get)]
   pub kwargs : Option<HashMap<String, String>>
 }
 
+#[pyclass]
 #[derive(Debug, Clone, PartialEq)]
 pub struct LineData{
+  #[pyo3(get)]
   pub line    : usize,
   pub kind    : TypesLineData,
+  #[pyo3(get)]
   pub key     : String,
+  #[pyo3(get)]
   pub value   : DataValue
 }
 
@@ -107,15 +115,13 @@ impl DataValue{
       return Some(ret);
     }
 
-    fn create_args(ch : Vec<String>) -> Option<Box<[String]>>{
-      let ret : Box<[String]> = ch.into_boxed_slice();
-
-      return Some(ret);
+    fn create_args(ch : Vec<String>) -> Option<Vec<String>>{
+      return Some(ch);
     }
 
     let sep_index : usize = not_instr(&values);
     let kwargs: Option<HashMap<String, String>>;
-    let mut args : Option<Box<[String]>> = None;
+    let mut args : Option<Vec<String>> = None;
 
     match sep_index{
       0 => {
