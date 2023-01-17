@@ -1,17 +1,12 @@
 from .wdlang import *
 
 import argparse, pathlib
+from .Loader import App
 
 # import tkinter
 # from .tkwd import Constuct
 
-# class App(tkinter.Tk):
-#   def __init__(self):
-#     super().__init__()
 
-    # Constuct(".", self, Pages, Functions, Images)
-
-    # self.mainloop()
 
 class main:
   def __init__(self) -> int:
@@ -25,7 +20,7 @@ class main:
     else:
       main_path = pathlib.Path.cwd()
       
-    wdlang.dicovery_dir(main_path.as_posix())
+    App(wdlang.dicovery_dir(main_path.as_posix()))
 
   def __repr__(self) -> str:
     return "\nwdlang end"

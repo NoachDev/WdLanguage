@@ -1,6 +1,6 @@
 use std::{collections::HashMap};
 
-use pyo3::{pyclass, IntoPy};
+use pyo3::{pyclass};
 
 use crate::lexer::simbolys;
 

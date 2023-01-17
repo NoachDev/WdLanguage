@@ -17,11 +17,7 @@ fn dicovery_dir(main: &str) -> PyResult<Vec<gramma::gtypes::WdTemplate>>{
   let wd_funct    : PathBuf = main_path.join("Functions");
   // let wd_imags    : PathBuf = main_path.join("Images");
   // let wd_fonts    : PathBuf = main_path.join("Fonts");
-
-  // println!("main  path : {:?}", main_path);
-  // println!("pages path : {:?}, exist : {}", wd_pages, wd_pages.exists());
-  // println!("funct path : {:?}, exist : {}", wd_funct, wd_funct.exists());
-
+  
   if wd_pages.exists() && wd_funct.exists(){
     return Ok(router::main(& wd_pages, wd_funct, String::new()));
   }

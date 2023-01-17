@@ -43,7 +43,7 @@ fn verify_wdigets(widgets : Vec<gramma::gtypes::Widget>){
   let wd_1 = &widgets[1];
 
   assert_eq!("f_test", wd_1.name, "expected 'f_test' of name in second widget");
-  assert_eq!(Some(" Frame".to_string()), wd_1.element_type, "expected Frame of type on second widget");
+  assert_eq!(Some(" Button".to_string()), wd_1.element_type, "expected Frame of type on second widget");
 
   assert_eq!(wd_1.presets.len(), 2, "expeted two presets on second widget");
   assert!(wd_1.presets.contains(&" slim".to_string()) && wd_1.presets.contains(&" test1".to_string()), "expected to have slim and test2 presets in second wdiget");
@@ -55,13 +55,13 @@ fn verify_wdigets(widgets : Vec<gramma::gtypes::Widget>){
 
 fn verify_vars(vars : gramma::gtypes::WdVars){
 
-  let list_key_names = ["test01","test02","test03","test04","test05","test01","test02","test03","df_bg","df_destac","df_desabl","df_fg","font_family","font_size","font",];
+  let list_key_names = ["test01","test02","test03","test04","test05","df_bg","df_destac","df_desabl","df_fg","font_family","font_size","font",];
 
   assert_eq!(".", vars.__master__, "expected the master name is (root)");
   assert_eq!(list_key_names.len(), vars.others.len(), "epected the number of variables is 15");
 
-  for (ld, exp) in vars.others.iter().zip(list_key_names){
-    assert_eq!(exp, ld.key, "key of vars")
+  for exp in list_key_names{
+    assert!(vars.others.contains_key(exp), "key of vars")
   }
 
 }

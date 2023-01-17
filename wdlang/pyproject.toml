@@ -10,7 +10,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = ["tk~=0.1.0"]
+dependencies = ["tk~=0.1.0", "numpy~=1.24.0", "cairosvg~=2.6.0"]
 
 
 [project.scripts]

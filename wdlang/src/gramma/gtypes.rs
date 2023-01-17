@@ -39,7 +39,7 @@ pub struct WdVars{
   #[pyo3(get)]
   pub __master__ : String,
   #[pyo3(get)]
-  pub others : scopes::WdDatas
+  pub others : HashMap<String, lexer::ltypes::DataValue>
 }
 
 #[pyclass]
@@ -129,7 +129,16 @@ impl WdTemplate {
   }
 
   pub fn create_element_wdvars(& mut self, scopes : & mut scopes::BoxScopes){
-    self.wd_vars.others.append(& mut scopes.main_scope.as_mut().unwrap().1)
+    loop {
+      if let Some(data) = scopes.main_scope.as_mut().unwrap().1.pop(){
+        self.wd_vars.others.insert(data.key, data.value);
+        
+      }
+      else {
+        break;
+      }
+
+    }
   }
 
   pub fn create_element_preset(& mut self, scopes : & mut scopes::BoxScopes){
@@ -216,7 +225,7 @@ impl WdTemplate {
     Self{
       name    : name.clone(),
       widgets : Vec::new(),
-      wd_vars : WdVars { __master__: name, others: Vec::new() }, // add name
+      wd_vars : WdVars { __master__: name, others: HashMap::new() }, // add name
       presets : Vec::new(),
       methods : Vec::new(),
       script  : script
