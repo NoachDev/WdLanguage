@@ -40,18 +40,16 @@ class Contructor:
 
     return tkinter.Frame
 
-  def load_atributes(self, widget : tkinter.Widget, atributes : list):
-    atrb = {i.key : i.value.args.pop().strip() for i in atributes}
-
+  def load_atributes(self, widget : tkinter.Widget, atributes : dict):
+    atrb = {key : value.args.pop().strip() for (key, value) in atributes.items()}
     widget.configure(**atrb)
 
-  def run_commands(self, widget : tkinter.Widget, commands : list):
-    for cmd in commands:
-      key = cmd.key.strip()
-      args  = cmd.value.args or []
-      kwargs = cmd.value.kwargs or {}
+  def run_commands(self, widget : tkinter.Widget, commands : dict):
+    for (key, value) in commands.items():
+      args  = value.args or []
+      kwargs = value.kwargs or {}
 
-      getattr(widget, key)(*args, **kwargs)
+      getattr(widget, key.strip())(*args, **kwargs)
 
     pass
 
@@ -62,7 +60,6 @@ class Contructor:
     else:
       widget = self.gen_type(class_widget.element_type)(master=master, name=name)
 
-    self.load_presets(widget, class_widget.presets)
     self.load_atributes(widget, class_widget.atributs)
     self.run_commands(widget, class_widget.commands)
 

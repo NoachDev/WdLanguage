@@ -1,7 +1,10 @@
-use crate::lexer::{ltypes::{LineData, TypesObject}, self};
+use std::collections::HashMap;
+
+use crate::lexer::{ltypes::{DataValue, TypesObject}, self};
 use super::gtypes;
 
-pub type WdDatas   = Vec<LineData>;
+
+pub type WdDatas   = HashMap<String, DataValue>;
 type ScopeData  = (TypesObject, WdDatas);
 
 #[derive(Default)]
@@ -21,11 +24,11 @@ pub struct ScopesManager<'a>{
 
 impl BoxScopes{
 
-  pub fn find_key(& mut self, find : &Vec<String>) -> Result<lexer::ltypes::LineData, String>{
+  pub fn find_key(& mut self, find : &Vec<String>) -> Result<DataValue, String>{
 
-    for (i, ld) in self.main_scope.as_ref().unwrap().1.iter().enumerate(){
-      if find.contains(&ld.key){
-        return Ok(self.main_scope.as_mut().unwrap().1.remove(i));
+    for f in find{
+      if self.main_scope.as_ref().unwrap().1.contains_key(f){
+        return Ok(self.main_scope.as_mut().unwrap().1.remove(f).unwrap());
       }
 
     }
@@ -88,7 +91,7 @@ impl<'a> ScopesManager<'a> {
           }
           
           else{
-            dest.1.push(linedata)
+            dest.1.insert(linedata.key, linedata.value);
           }
 
         },

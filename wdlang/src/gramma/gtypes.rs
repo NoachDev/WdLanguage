@@ -88,11 +88,11 @@ impl WdTemplate {
   fn element_widget(&self, scopes : & mut scopes::BoxScopes) -> Widget{
     let fields_widget = ELEMENTS_FIELDS.get("widgets").unwrap();
 
-    let name  = scopes.find_key(fields_widget.get("name").unwrap()).expect("wdigets need one name (id)").value.args.unwrap().first().unwrap().trim().to_lowercase();
+    let name  = scopes.find_key(fields_widget.get("name").unwrap()).expect("wdigets need one name (id)").args.unwrap().first().unwrap().trim().to_lowercase();
 
     let presets : Vec<String> = {  
       if let Ok(prs) = scopes.find_key(fields_widget.get("presets").unwrap()){
-        prs.value.args.unwrap()
+        prs.args.unwrap()
       }
       else{
         Vec::new()
@@ -101,7 +101,7 @@ impl WdTemplate {
 
     let elm_type : Option<String> = {
       if let Ok(elm_t) = scopes.find_key(fields_widget.get("elm_type").unwrap()){
-        Some(elm_t.value.args.unwrap().first().unwrap().to_string())
+        Some(elm_t.args.unwrap().first().unwrap().to_string())
       }
       else{
         None
@@ -114,7 +114,7 @@ impl WdTemplate {
       presets: presets,
       atributs: scopes.get_segments(lexer::ltypes::TypesObject::Segments(lexer::ltypes::TypesSegment::Atributs)),
       commands: scopes.get_segments(lexer::ltypes::TypesObject::Segments(lexer::ltypes::TypesSegment::Commands)),
-      others : scopes.main_scope.as_mut().unwrap().1.drain(0..).collect(),
+      others : scopes.main_scope.as_mut().unwrap().1.drain().collect(),
       comments : scopes.comments.drain(0..).collect()
     }
   }
@@ -129,22 +129,22 @@ impl WdTemplate {
   pub fn create_element_method(& mut self, scopes : & mut scopes::BoxScopes){
     let mathod_fields = ELEMENTS_FIELDS.get("methods").unwrap();
 
-    let name  = scopes.find_key(mathod_fields.get("name").unwrap()).expect("methods need one name (id)").value.args.unwrap().first().unwrap().trim().to_string();
+    let name  = scopes.find_key(mathod_fields.get("name").unwrap()).expect("methods need one name (id)").args.unwrap().first().unwrap().trim().to_string();
+    
     let parm  = {
       if let Ok(field) = scopes.find_key(mathod_fields.get("parmeters").unwrap()){
-        field.value.args.unwrap()
+        field.args.unwrap()
       }
       else{
         Vec::new()
       }
     };
 
-    scopes.main_scope.as_mut().unwrap().1.push(
-      lexer::ltypes::LineData {
-        line: 0,
-        kind: lexer::ltypes::TypesLineData::Local,
-        key: ELEMENTS_FIELDS.get("widgets").unwrap().get("name").unwrap().last().unwrap().to_string(),
-        value: lexer::ltypes::DataValue { args: Some(vec![name.clone()]), kwargs: None }
+    scopes.main_scope.as_mut().unwrap().1.insert(
+      ELEMENTS_FIELDS.get("widgets").unwrap().get("name").unwrap().last().unwrap().to_string(),
+      lexer::ltypes::DataValue {
+        args: Some(vec![name.clone()]),
+        kwargs: None
       }
     );
 
@@ -162,7 +162,7 @@ impl WdTemplate {
   pub fn call_method(& mut self, data : lexer::ltypes::LineData ){
     for i in self.methods.iter_mut(){
       if i.name == data.key.trim(){
-        i.calls.push(data);
+        i.calls.insert(i.name.clone(), data.value);
         break;
       }
     }
@@ -260,8 +260,8 @@ impl<'a> Repository<'a>{
   pub fn create_element_preset(& mut self, scopes : & mut scopes::BoxScopes){
     self.presets.push(
       Preset{
-        name : scopes.find_key(ELEMENTS_FIELDS.get("presets").unwrap().get("name").unwrap()).expect("presets need one name (id)").value.args.unwrap().first().unwrap().to_string(),
-        others : scopes.main_scope.as_mut().unwrap().1.drain(0..).collect()
+        name : scopes.find_key(ELEMENTS_FIELDS.get("presets").unwrap().get("name").unwrap()).expect("presets need one name (id)").args.unwrap().first().unwrap().to_string(),
+        others : scopes.main_scope.as_mut().unwrap().1.drain().collect()
       }
     )
   }
