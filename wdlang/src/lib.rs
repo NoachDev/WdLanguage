@@ -19,7 +19,7 @@ fn dicovery_dir(main: &str) -> PyResult<Vec<gramma::gtypes::WdTemplate>>{
   // let wd_fonts    : PathBuf = main_path.join("Fonts");
   
   if wd_pages.exists() && wd_funct.exists(){
-    return Ok(router::main(& wd_pages, wd_funct, String::new()));
+    return Ok(router::main(& wd_pages, wd_funct, String::new(), None));
   }
 
   PyResult::Err(PyTypeError::new_err({

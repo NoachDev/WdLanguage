@@ -46,14 +46,10 @@ impl BoxScopes{
 
   }
 
-  fn get_dest<F>(& mut self, mut func : F)
-
-  where
-    F : FnMut(& mut ScopeData)
-  {
+  fn get_dest(& mut self) -> & mut ScopeData{
     match self.dest{
-      false => {func(& mut self.main_scope.as_mut().unwrap())},
-      true => {func(& mut self.sub_scopes.last_mut().unwrap())}
+      false => return self.main_scope.as_mut().unwrap(),
+      true => return self.sub_scopes.last_mut().unwrap()
     }
 
   }
@@ -61,16 +57,13 @@ impl BoxScopes{
 }
 
 impl<'a> ScopesManager<'a> {
-  fn create_elements(& mut self, section_types : lexer::ltypes::TypesSection){
+  fn create_elements(& mut self, section_types : lexer::ltypes::TypesSection, repo : & mut gtypes::Repository){
     match section_types{
       lexer::ltypes::TypesSection::Widget   => {
         self.template.create_element_widget(& mut self.scopes)
       }
-      lexer::ltypes::TypesSection::Wdvar    => {
-        self.template.create_element_wdvars(& mut self.scopes)
-      }
       lexer::ltypes::TypesSection::Preset   => {
-        self.template.create_element_preset(& mut self.scopes)
+        repo.create_element_preset(& mut self.scopes)
       }
       lexer::ltypes::TypesSection::Method   => {
         self.template.create_element_method(& mut self.scopes)
@@ -81,15 +74,23 @@ impl<'a> ScopesManager<'a> {
 
   }
   
-  fn append_data(& mut self, linedata : lexer::ltypes::LineData){
+  fn append_data(& mut self, mut linedata : lexer::ltypes::LineData, repo : & mut gtypes::Repository){
     
     if self.comment_count == 0 {
       match linedata.kind{
         lexer::ltypes::TypesLineData::Local => {
-          self.scopes.get_dest(|dest| {
-            dest.1.push(linedata.clone());
-            
-          })
+          let dest = self.scopes.get_dest();
+
+          repo.put_vars(& mut linedata.value);
+
+          if dest.0 == TypesObject::Sections(lexer::ltypes::TypesSection::Wdvar){
+            repo.create_var(linedata)
+          }
+          
+          else{
+            dest.1.push(linedata)
+          }
+
         },
         lexer::ltypes::TypesLineData::Global => {
           self.template.call_method(linedata)
@@ -101,7 +102,7 @@ impl<'a> ScopesManager<'a> {
     
   }
 
-  fn pos_end(& mut self, kind : TypesObject){
+  fn pos_end(& mut self, kind : TypesObject, repo : & mut gtypes::Repository){
     match kind{
       TypesObject::Sections(section_type) => {
         if section_type == lexer::ltypes::TypesSection::Comment{
@@ -112,7 +113,7 @@ impl<'a> ScopesManager<'a> {
           }
         }
         else if self.is_comment == false{
-          self.create_elements(section_type);
+          self.create_elements(section_type, repo);
           self.scopes.sub_scopes.clear();
           self.scopes.comments.clear()
           
@@ -148,7 +149,7 @@ impl<'a> ScopesManager<'a> {
 
   }
 
-  fn create_object(& mut self, object : lexer::ltypes::Object){
+  fn create_object(& mut self, object : lexer::ltypes::Object, repo : & mut gtypes::Repository){
 
     match object.postion{
       lexer::ltypes::Position::Start => {
@@ -156,7 +157,7 @@ impl<'a> ScopesManager<'a> {
       },
       
       lexer::ltypes::Position::End => {
-        self.pos_end(object.kind)
+        self.pos_end(object.kind, repo)
       },
 
       lexer::ltypes::Position::Inline => {
@@ -171,14 +172,14 @@ impl<'a> ScopesManager<'a> {
     self.scopes.comments.push(text)
   }
 
-  pub fn from_token(& mut self, token : lexer::ltypes::Token) -> & Self{
+  pub fn from_token(& mut self, token : lexer::ltypes::Token, repo : & mut gtypes::Repository) -> & Self{
     match token{
       lexer::ltypes::Token::Object(object) => {
-        self.create_object(object);
+        self.create_object(object,repo);
       },
 
       lexer::ltypes::Token::LineData(ldata) => {
-        self.append_data(ldata)
+        self.append_data(ldata, repo)
       },
     }
 

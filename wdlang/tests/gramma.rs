@@ -19,11 +19,11 @@ fn gramma_output(){
   assert!(pages.exists());
   assert!(func.exists());
 
-  let ret = gramma::main(pages, &func, &".".to_string());
+  let (ret, repo) = gramma::main(pages, &func, &".".to_string(), None);
 
   verify_wdigets(ret.widgets);
-  verify_vars(ret.wd_vars);
-  verify_presets(ret.presets);
+  verify_vars(repo.wd_vars);
+  verify_presets(repo.presets);
   verify_methods(ret.methods);
 
   assert_eq!(Some(func.join("__init__.py")), ret.script);
@@ -46,7 +46,7 @@ fn verify_wdigets(widgets : Vec<gramma::gtypes::Widget>){
   assert_eq!(Some(" Button".to_string()), wd_1.element_type, "expected Frame of type on second widget");
 
   assert_eq!(wd_1.presets.len(), 2, "expeted two presets on second widget");
-  assert!(wd_1.presets.contains(&" slim".to_string()) && wd_1.presets.contains(&" test1".to_string()), "expected to have slim and test2 presets in second wdiget");
+  assert!(wd_1.presets.contains(&" slim".to_string()) && wd_1.presets.contains(&" preste1".to_string()), "expected to have slim and test2 presets in second wdiget");
 
   assert_eq!(3, wd_1.atributs.len(), "expected 3 atributes on second wdiget");
   assert_eq!(1, wd_1.commands.len(), "expected 1 command on second widget");   

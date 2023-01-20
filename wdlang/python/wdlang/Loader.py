@@ -18,9 +18,6 @@ class Contructor:
         master, name = self.gen_tkname(self.templ.name, i.name)
         self.create_widget(window.nametowidget(master), i , name)
       
-  def get_presets(self):
-    pass
-
   def gen_tkname(self, master : str, widget : str):
     if widget == "__master__":
       index_l = master.rfind(".")+1
@@ -47,9 +44,6 @@ class Contructor:
     atrb = {i.key : i.value.args.pop().strip() for i in atributes}
 
     widget.configure(**atrb)
-
-  def load_presets(self, wdiget, presets):
-    pass
 
   def run_commands(self, widget : tkinter.Widget, commands : list):
     for cmd in commands:

@@ -50,7 +50,6 @@
   font_family           : "Caviar Dreams"
   font_size             : 10
   font                  : (font_family, font_size)
-
 |-
 
 .|
@@ -72,14 +71,14 @@
 
 <|
   wd_name               : f_test
-  wd_type               : Frame
+  wd_type               : Button
 
-  presets               : slim, test1
+  presets               : slim, preste1
 
   {|
     highlightthickness  : 2
-    width               : 30
-    height              : 30
+    width               : test03
+    height              : 5
   |}
 
   [|
