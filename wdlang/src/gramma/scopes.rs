@@ -63,13 +63,13 @@ impl<'a> ScopesManager<'a> {
   fn create_elements(& mut self, section_types : lexer::ltypes::TypesSection, repo : & mut gtypes::Repository){
     match section_types{
       lexer::ltypes::TypesSection::Widget   => {
-        self.template.create_element_widget(& mut self.scopes)
+        self.template.create_element_widget(& mut self.scopes, repo)
       }
       lexer::ltypes::TypesSection::Preset   => {
         repo.create_element_preset(& mut self.scopes)
       }
       lexer::ltypes::TypesSection::Method   => {
-        self.template.create_element_method(& mut self.scopes)
+        self.template.create_element_method(& mut self.scopes, repo)
         
       },
       _ => {}

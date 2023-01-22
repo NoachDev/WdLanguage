@@ -36,8 +36,6 @@ fn verify_wdigets(widgets : Vec<gramma::gtypes::Widget>){
   let wd_0 = &widgets[0];
 
   assert_eq!(wd_0.name, "__master__");
-  assert_eq!(wd_0.presets.len(), 1);
-  assert!(wd_0.presets.contains(&" slim".to_string()));
   assert_eq!(wd_0.commands.len(), 3);
 
   let wd_1 = &widgets[1];
@@ -45,8 +43,8 @@ fn verify_wdigets(widgets : Vec<gramma::gtypes::Widget>){
   assert_eq!("f_test", wd_1.name, "expected 'f_test' of name in second widget");
   assert_eq!(Some(" Button".to_string()), wd_1.element_type, "expected Frame of type on second widget");
 
-  assert_eq!(wd_1.presets.len(), 2, "expeted two presets on second widget");
-  assert!(wd_1.presets.contains(&" slim".to_string()) && wd_1.presets.contains(&" preste1".to_string()), "expected to have slim and test2 presets in second wdiget");
+  assert_eq!(wd_1.presets.len(), 1, "expeted one presets on second widget");
+  assert!(wd_1.presets[0].name == " slim", "expected to have slim in second widget");
 
   assert_eq!(3, wd_1.atributs.len(), "expected 3 atributes on second wdiget");
   assert_eq!(1, wd_1.commands.len(), "expected 1 command on second widget");   

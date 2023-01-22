@@ -40,8 +40,17 @@ class Contructor:
 
     return tkinter.Frame
 
-  def load_atributes(self, widget : tkinter.Widget, atributes : dict):
-    atrb = {key : value.args.pop().strip() for (key, value) in atributes.items()}
+  def load_presets(self, presets : list) -> dict:
+    ret : dict = dict()
+
+    for i in presets:
+      ret.update(**{key : value.args.pop().strip() for (key, value) in i.others.items()})
+
+    return ret
+
+  def load_atributes(self, widget : tkinter.Widget, presets : dict, atributes : dict):
+    atrb = {**presets, **{key : value.args.pop().strip() for (key, value) in atributes.items()}}
+
     widget.configure(**atrb)
 
   def run_commands(self, widget : tkinter.Widget, commands : dict):
@@ -51,8 +60,6 @@ class Contructor:
 
       getattr(widget, key.strip())(*args, **kwargs)
 
-    pass
-
   def create_widget(self, master : tkinter.Widget , class_widget, name):
 
     if str(master) == "." and name == "":
@@ -60,7 +67,7 @@ class Contructor:
     else:
       widget = self.gen_type(class_widget.element_type)(master=master, name=name)
 
-    self.load_atributes(widget, class_widget.atributs)
+    self.load_atributes(widget, self.load_presets(class_widget.presets), class_widget.atributs)
     self.run_commands(widget, class_widget.commands)
 
     pass
