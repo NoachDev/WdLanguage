@@ -14,7 +14,7 @@
 -|
   test01                : 100
   test02                : test01 / 10
-  test03                : (test02 + test01) / 15
+  test03                : (test02 + test01) / 11
 |-
 
 &|
@@ -59,7 +59,6 @@
 
 <|
   tk_name               : __master__
-  presets               : slim
 
   [|
     title               : Tk_test
@@ -73,7 +72,7 @@
   wd_name               : f_test
   wd_type               : Button
 
-  presets               : slim, preste1
+  presets               : slim
 
   {|
     highlightthickness  : 2
