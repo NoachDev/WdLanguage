@@ -1,8 +1,0 @@
-Diagram:
-  command -------> wdlang_____
-                            ||
-                            tkwd_____
-                                   ||
-                                   Files_____
-                                           ||
-                                           Parser 

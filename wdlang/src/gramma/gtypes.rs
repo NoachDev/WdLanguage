@@ -229,7 +229,7 @@ impl<'a> Repository<'a>{
 
       if let Some(data) = self.wd_vars.others.get(name){
 
-        let mut to_change : String;
+        let to_change : String;
 
         if key.is_some(){
           if data.kwargs.is_some(){

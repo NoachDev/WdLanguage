@@ -20,13 +20,11 @@ example:
 
 create pre-render statatic componenents
 create file route page
-create dynamic cmponents
+create dynamic components
 
 wdlang - build ( pack gui and manager on (.deb | .exe | .apk))
 
 # commands of wdlang
 wdlang -sd(--srcDirectory) /home/user/test
-wdlang -sp(--srcPages)     /home/user/test/Pages
-wdlang -sf(--srcFunctions) /home/user/test/Functions
 
 ##### *wd is abbreviation of widget
