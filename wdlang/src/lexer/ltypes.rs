@@ -1,6 +1,6 @@
 use std::{collections::HashMap};
-
-use pyo3::{pyclass};
+use eval::eval;
+use pyo3::{pyclass, IntoPy, PyObject, Python};
 
 use crate::lexer::simbolys;
 
@@ -29,13 +29,20 @@ pub struct Object{
   pub content : Option<String>
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct StringVar{
+  variables  : Option<HashMap<usize, (String, String)>>,
+  pub content  : String
+  
+}
+
 #[pyclass]
 #[derive(Debug, Clone, PartialEq)]
 pub struct DataValue{
   #[pyo3(get)]
-  pub args : Option<Vec<String>>,
+  pub args : Option<Vec<StringVar>>,
   #[pyo3(get)]
-  pub kwargs : Option<HashMap<String, String>>
+  pub kwargs : Option<HashMap<String, StringVar>>
 }
 
 #[pyclass]
@@ -57,51 +64,57 @@ pub enum Token{
 }
 
 impl DataValue{
+  pub fn args_list(self) -> Vec<String>{
+    self.args.unwrap().iter().map(|x| x.content.to_string()).collect()
+  }
+
   pub fn new(values : String) -> Self{
     fn not_instr(text : &String) -> usize{
-      for i in simbolys::FIND_SEP.captures_iter(text.as_bytes()){
+      for i in simbolys::WORD_IDF.captures_iter(text.as_bytes()){
         let cap = i.unwrap();
         
         if let Some(find_match) = cap.name("Cap"){
-          return find_match.start();
-
+          if String::from_utf8_lossy(find_match.as_bytes()).to_string() == simbolys::DATA_TYPE_SEP{
+            return find_match.start();
+          }
+          
         }
       } 
 
       return 0;
     }
 
-    fn broken_in_ch(text : &str) -> Vec<String>{
+    fn broken_in_ch(text : &str) -> Vec<StringVar>{
       let mut start = 0;
-      let mut ret : Vec<String> = Vec::new();
+      let mut ret : Vec<StringVar> = Vec::new();
 
       for i in simbolys::BROKEN_CH.captures_iter(text.as_bytes()){
         let cap = i.unwrap();
 
         if let Some(cap_match) = cap.name("End"){
-          ret.push(text[start..cap_match.start()].to_string());
+          ret.push(StringVar::new(text[start..cap_match.start()].to_string()));
           start = cap_match.end()
         }
 
       }
 
-      ret.push(text[start..text.len()].to_string());
-
-      // println!("my vec : {:?}", ret);
+      ret.push(StringVar::new(text[start..text.len()].to_string()));
 
       return ret;
     }
 
-    fn create_kwargs(ch : &Vec<String>) -> Option<HashMap<String, String>>{
-      let mut ret: HashMap<String, String> = HashMap::new();
+    fn create_kwargs(ch : &Vec<StringVar>) -> Option<HashMap<String, StringVar>>{
+      let mut ret: HashMap<String, StringVar> = HashMap::new();
       let reg = &simbolys::GET_KW;
 
       for i in ch{
-        // println!("my text : {}", i);
-        if let Some(cap) = reg.captures(i.as_bytes()).unwrap(){
+        if let Some(cap) = reg.captures(i.content.as_bytes()).unwrap(){
 
           let key : String = String::from_utf8_lossy(cap.name("Key").unwrap().as_bytes()).to_string();
-          let value : String = String::from_utf8_lossy(cap.name("Value").unwrap().as_bytes()).to_string();
+          let value : StringVar = StringVar{
+            variables : None,
+            content : String::from_utf8_lossy(cap.name("Value").unwrap().as_bytes()).to_string()
+          };
 
           ret.insert(key, value);
           
@@ -115,13 +128,13 @@ impl DataValue{
       return Some(ret);
     }
 
-    fn create_args(ch : Vec<String>) -> Option<Vec<String>>{
+    fn create_args(ch : Vec<StringVar>) -> Option<Vec<StringVar>>{
       return Some(ch);
     }
 
     let sep_index : usize = not_instr(&values);
-    let kwargs: Option<HashMap<String, String>>;
-    let mut args : Option<Vec<String>> = None;
+    let kwargs: Option<HashMap<String, StringVar>>;
+    let mut args : Option<Vec<StringVar>> = None;
 
     match sep_index{
       0 => {
@@ -148,5 +161,78 @@ impl DataValue{
       kwargs: kwargs
     }
 
+  }
+}
+
+impl StringVar{
+  fn eval_content(& mut self){
+    if let Ok(res) =  eval(&self.content){
+      if res.is_f64(){
+        let val = res.as_f64().unwrap();
+        
+        // float -> int  (1.0 , 1);
+        if val - val.trunc() == 0.0{
+          self.content = (val as i64).to_string();
+        }
+
+        else{
+          self.content = val.to_string()
+
+        }
+
+      }
+      else if res.is_null() == false{
+        self.content = res.to_string();
+      }
+    }
+  }
+
+  pub fn load_vars(& mut self){
+
+    let mut salt : isize = 0;
+
+    if let Some(vars_pool) = self.variables.as_ref(){
+      let mut idx = vars_pool.keys().collect::<Vec<&usize>>();
+      idx.sort(); 
+
+      for start in idx{
+        let (name, content) = vars_pool.get(start).unwrap();
+
+        let end = ( start + name.len() ) as isize + salt;
+        
+        self.content.replace_range( (*start as isize + salt) as usize .. end as usize, content.as_str());
+        
+        salt += content.len() as isize;
+        salt -= name.len() as isize ;
+
+      }
+      
+      self.eval_content();
+      
+    }
+    
+  }
+
+  pub fn append_vars(& mut self, name : String, change : String, index : usize){
+
+    if self.variables.is_none(){
+      self.variables = Some(HashMap::new());
+    }
+
+    self.variables.as_mut().unwrap().insert(index, (name, change));
+
+  }
+  
+  pub fn new(name : String) -> Self{
+    Self{
+      variables : None,
+      content : name
+    }
+  }
+}
+
+impl IntoPy<PyObject> for StringVar {
+  fn into_py(self, py: Python<'_>) -> PyObject {
+      self.content.into_py(py)
   }
 }

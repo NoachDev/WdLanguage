@@ -1,9 +1,8 @@
+use pcre2::bytes::Match;
 use pyo3::{pyclass};
 use serde_yaml;
 use std::{path::PathBuf, collections::HashMap};
 use crate::lexer;
-use eval::eval;
-
 use super::{scopes, ROOT_WD, SEP_WD};
 use lazy_static::lazy_static;
 
@@ -93,11 +92,11 @@ impl WdTemplate {
   fn element_widget(&self, scopes : & mut scopes::BoxScopes, repo : & mut Repository) -> Widget{
     let fields_widget = ELEMENTS_FIELDS.get("widgets").unwrap();
 
-    let name  = scopes.find_key(fields_widget.get("name").unwrap()).expect("wdigets need one name (id)").args.unwrap().first().unwrap().trim().to_lowercase();
+    let name  = scopes.find_key(fields_widget.get("name").unwrap()).expect("wdigets need one name (id)").args.unwrap().first().unwrap().content.trim().to_lowercase();
 
     let presets : Vec<String> = {  
       if let Ok(prs) = scopes.find_key(fields_widget.get("presets").unwrap()){
-        prs.args.unwrap()
+        prs.args_list()
       }
       else{
         Vec::new()
@@ -106,7 +105,7 @@ impl WdTemplate {
 
     let elm_type : Option<String> = {
       if let Ok(elm_t) = scopes.find_key(fields_widget.get("elm_type").unwrap()){
-        Some(elm_t.args.unwrap().first().unwrap().to_string())
+        Some(elm_t.args.unwrap().first().unwrap().content.to_string())
       }
       else{
         None
@@ -134,11 +133,11 @@ impl WdTemplate {
   pub fn create_element_method(& mut self, scopes : & mut scopes::BoxScopes, repo : & mut Repository){
     let mathod_fields = ELEMENTS_FIELDS.get("methods").unwrap();
 
-    let name  = scopes.find_key(mathod_fields.get("name").unwrap()).expect("methods need one name (id)").args.unwrap().first().unwrap().trim().to_string();
+    let name  = scopes.find_key(mathod_fields.get("name").unwrap()).expect("methods need one name (id)").args.unwrap().first().unwrap().content.trim().to_string();
     
-    let parm  = {
+    let parm : Vec<String>  = {
       if let Ok(field) = scopes.find_key(mathod_fields.get("parmeters").unwrap()){
-        field.args.unwrap()
+        field.args_list()
       }
       else{
         Vec::new()
@@ -148,7 +147,7 @@ impl WdTemplate {
     scopes.main_scope.as_mut().unwrap().1.insert(
       ELEMENTS_FIELDS.get("widgets").unwrap().get("name").unwrap().last().unwrap().to_string(),
       lexer::ltypes::DataValue {
-        args: Some(vec![name.clone()]),
+        args: Some(vec![lexer::ltypes::StringVar::new(name.clone())]),
         kwargs: None
       }
     );
@@ -214,55 +213,61 @@ impl WdTemplate {
 }
 
 impl<'a> Repository<'a>{
+  fn get_vars(&self, list_val : Vec<Match>, arg : & mut lexer::ltypes::StringVar){
+    let mut undf : Vec<Match> = Vec::new();
 
-  fn filter_vars(& self, arg : & mut String){
-    // need (remove quoteds values , eval values , filter in parent repo too  )
+    for cap_match in list_val{
+      let word = String::from_utf8_lossy(cap_match.as_bytes()).to_string();
 
-    for (name , data) in self.wd_vars.others.iter(){
-      if arg.contains(name){
-        let mut to_change = String::new();
+      let mut name  = word.as_str();
+      let mut key : Option<&str> = None;
 
-        if let Some(index) = arg.find(&(name.to_owned() + ".")){
-          let key = arg[index + name.len() + 1 ..].split(" ").next().unwrap().to_string();
+      if let Some(index) = word.find("."){
+        name = word.split_at(index).0;
+        key = Some(word.split_at(index).1);
+      }
 
-          if let Some(val) = data.kwargs.as_ref().unwrap().get(&key){
-            to_change = val.to_string();
+      if let Some(data) = self.wd_vars.others.get(name){
+
+        let mut to_change : String;
+
+        if key.is_some(){
+          if data.kwargs.is_some(){
+            to_change = data.kwargs.as_ref().unwrap().get(key.unwrap()).unwrap().content.to_string();
+          }
+          else{
+            panic!("Not have kwargs in {}", name)
           }
         }
-        else {
-          to_change = data.args.as_ref().unwrap().last().unwrap().to_string();
-
+        else{
+          to_change = data.args.as_ref().unwrap().last().unwrap().content.to_string();
         }
 
-        if let Ok(res) =  eval(&to_change){
-          if res.is_f64(){
-            let val = res.as_f64().unwrap();
-            
-            if val - val as i64 as f64 == 0.0{
-              to_change = (val as i64).to_string()
-            }
-            else{
-              to_change = val.to_string()
-
-            }
-
-          }
-          else if res.is_null() == false{
-            to_change = res.to_string();
-          }
-        }
-
-        let new_arg = arg.replace(name, &to_change);
-
-        arg.clear();
-        arg.push_str(new_arg.as_str());
+        arg.append_vars(word, to_change, cap_match.start());
+        
+        
+      }
+      
+      else{
+        undf.push(cap_match)
       }
     }
 
-    if let Some(parent) = self.parent{
-      parent.filter_vars(arg)
+    if undf.len() > 0 && self.parent.is_some(){
+      self.parent.unwrap().get_vars(undf, arg)
     }
+
+
+
+  }
+
+  fn filter_vars(& self , arg : & mut lexer::ltypes::StringVar ){
+    let text = arg.content.to_string();
+    let vec_w : Vec<Match>= lexer::simbolys::WORD_IDF.captures_iter(text.as_bytes()).filter_map(|x| x.unwrap().name("word")).collect();
+
+    self.get_vars(vec_w, arg);
     
+    arg.load_vars();
   }
 
   pub fn load_presets(& self, list_presets : Vec<String>) -> Vec<Preset>{
@@ -303,7 +308,7 @@ impl<'a> Repository<'a>{
   pub fn create_element_preset(& mut self, scopes : & mut scopes::BoxScopes){
     self.presets.push(
       Preset{
-        name : scopes.find_key(ELEMENTS_FIELDS.get("presets").unwrap().get("name").unwrap()).expect("presets need one name (id)").args.unwrap().first().unwrap().to_string(),
+        name : scopes.find_key(ELEMENTS_FIELDS.get("presets").unwrap().get("name").unwrap()).expect("presets need one name (id)").args.unwrap().first().unwrap().content.to_string(),
         others : scopes.main_scope.as_mut().unwrap().1.drain().collect()
       }
     )

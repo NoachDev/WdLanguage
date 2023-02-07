@@ -17,7 +17,7 @@ const SEGMENTS : [(&str, &str, ltypes::TypesObject); 3] = [
   ("_", "_", ltypes::TypesObject::Segments(ltypes::TypesSegment::Layouts)),
 ];
 
-const DATA_TYPE_SEP     : &str = "|"  ;
+pub const DATA_TYPE_SEP : &str = "|"  ;
 
 pub const OBJECTS_ADD   : &str = "|"  ;
 pub const LDATA_SEP     : &str = ":"  ;
@@ -49,18 +49,11 @@ lazy_static!{
 }
 
 lazy_static!{
-  pub static ref FIND_SEP : Regex = RegexBuilder::new().build(
-    &format!(
-      "(?:[\"\'].*?[\"\'])|(?P<Cap>[{}])",
-      DATA_TYPE_SEP,
-    )
+  pub static ref WORD_IDF : Regex = RegexBuilder::new().build(
+    "(?P<quoted>\"\"\".*?\"\"\"|\"\".*?\"\"|\".*?\")|(?P<word>\\w+[.]\\w+|\\w+)|(?P<Cap>.)"
   ).unwrap();
 
-  pub static ref BROKEN_CH  : Regex = RegexBuilder::new().build(
-    &format!(
-      "([\\\"\\\'\\{{\\[\\(].+?[\\)\\]\\}}\\\'\\\"])|(?P<End>[,])",
-    )
-  ).unwrap();
+  pub static ref BROKEN_CH  : Regex = RegexBuilder::new().build( "([\\\"\\\'\\{{\\[\\(].+?[\\)\\]\\}}\\\'\\\"])|(?P<End>[,])").unwrap();
 
   pub static ref GET_KW  : Regex = RegexBuilder::new().build(
     &format!(
@@ -68,6 +61,8 @@ lazy_static!{
       LDATA_SEP
     )
   ).unwrap();
+
+  pub static ref REF_ACESS  : Regex = RegexBuilder::new().build( r"(?:[$][{]NULL_TF[(])(?P<name>.*?)(?:[)]})").unwrap();
 }
 
 
