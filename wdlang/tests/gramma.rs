@@ -1,6 +1,16 @@
 use wdlang::gramma;
 use std::path::Path;
 
+struct WidgetExpc<'a>{
+  name : &'a str,
+  element : Option<&'a str>,
+  presets : Vec<&'a str>,
+  atributes : Vec<&'a str>,
+  commands : Vec<&'a str>,
+  others : Vec<&'a str>,
+  comments : &'a str
+}
+
 #[test]
 fn load_elements(){
 
@@ -21,7 +31,32 @@ fn gramma_output(){
 
   let (ret, repo) = gramma::main(pages, &func, &".".to_string(), None);
 
-  verify_wdigets(ret.widgets);
+  let wid_1 = WidgetExpc{
+    name : "__master__",
+    element : None,
+    presets : vec![],
+    atributes : vec![],
+    commands : vec!["title", "rowconfigure", "columnconfigure"],
+    others : vec![],
+    comments : ""
+
+  };
+  let wid_2 = WidgetExpc{
+    name : "f_test",
+    element : Some("Button"),
+    presets : vec!["slim"],
+    atributes : vec!["highlightthickness", "width", "height"],
+    commands : vec!["place"],
+    others : vec![],
+    comments : ""
+
+  };
+
+  for (wid, expc) in ret.widgets.iter().zip([wid_1, wid_2]){
+    verify_wdigets(wid, expc);
+
+  }
+  // verify_wdigets(ret.widgets);
   verify_vars(repo.wd_vars);
   verify_presets(repo.presets);
   verify_methods(ret.methods);
@@ -30,24 +65,36 @@ fn gramma_output(){
 
 }
 
-fn verify_wdigets(widgets : Vec<gramma::gtypes::Widget>){
-  assert_eq!(widgets.len(), 2);
+fn contains_in(src: Vec<&String>, expec : &Vec<&str>){
+  for i in src{
+    assert!(expec.contains(&i.trim()))
+  }
+}
 
-  let wd_0 = &widgets[0];
+fn verify_wdigets(widget : &gramma::gtypes::Widget, expected : WidgetExpc){
+  assert_eq!(widget.name, expected.name);
 
-  assert_eq!(wd_0.name, "__master__");
-  assert_eq!(wd_0.commands.len(), 3);
+  if widget.element_type.is_some() && expected.element.is_some(){
+    assert_eq!(expected.element.unwrap(), widget.element_type.as_ref().unwrap().trim());
+  }
+  else{
+    assert_eq!(expected.element.is_none(), widget.element_type.is_none());
+  }
 
-  let wd_1 = &widgets[1];
+  assert_eq!(expected.presets.len(), widget.presets.len(), "len of presets in widget is unexpected");
+  assert_eq!(expected.atributes.len(), widget.atributs.len(), "len of atributes in widget is unexpected ");
+  assert_eq!(expected.commands.len(), widget.commands.len(), "len of commands in widget is unexpected ");
+  assert_eq!(expected.others.len(), widget.others.len(), "len of others in widget is unexpected ");
 
-  assert_eq!("f_test", wd_1.name, "expected 'f_test' of name in second widget");
-  assert_eq!(Some(" Button".to_string()), wd_1.element_type, "expected Frame of type on second widget");
+  for i in widget.presets.iter(){
+    assert!(expected.presets.contains(&i.name.trim()));
+  }
 
-  assert_eq!(wd_1.presets.len(), 1, "expeted one presets on second widget");
-  assert!(wd_1.presets[0].name == " slim", "expected to have slim in second widget");
+  contains_in(widget.atributs.keys().collect::<Vec<&String>>(), &expected.atributes);
+  contains_in(widget.commands.keys().collect::<Vec<&String>>(), &expected.commands);
+  contains_in(widget.others.keys().collect::<Vec<&String>>(), &expected.others);
 
-  assert_eq!(3, wd_1.atributs.len(), "expected 3 atributes on second wdiget");
-  assert_eq!(1, wd_1.commands.len(), "expected 1 command on second widget");   
+  assert_eq!(expected.comments , widget.comments, "expected other comment ")
 
 }
 
