@@ -62,7 +62,6 @@ lazy_static!{
     )
   ).unwrap();
 
-  pub static ref REF_ACESS  : Regex = RegexBuilder::new().build( r"(?:[$][{]NULL_TF[(])(?P<name>.*?)(?:[)]})").unwrap();
 }
 
 

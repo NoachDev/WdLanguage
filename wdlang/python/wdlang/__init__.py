@@ -20,7 +20,7 @@ class main:
     else:
       main_path = pathlib.Path.cwd()
       
-    App(wdlang.dicovery_dir(main_path.as_posix()))
+    App(wdlang.dicovery_dir(main_path.as_posix()), main_path)
 
   def __repr__(self) -> str:
     return "\nwdlang end"

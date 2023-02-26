@@ -1,5 +1,4 @@
 use std::{collections::HashMap};
-use eval::eval;
 use pyo3::{pyclass, IntoPy, PyObject, Python};
 
 use crate::lexer::simbolys;
@@ -97,8 +96,9 @@ impl DataValue{
         }
 
       }
+      let strvar = StringVar::new(text[start..text.len()].to_string());
 
-      ret.push(StringVar::new(text[start..text.len()].to_string()));
+      ret.push(strvar);
 
       return ret;
     }
@@ -165,28 +165,6 @@ impl DataValue{
 }
 
 impl StringVar{
-  fn eval_content(& mut self){
-    if let Ok(res) =  eval(&self.content){
-      if res.is_f64(){
-        let val = res.as_f64().unwrap();
-        
-        // float -> int  (1.0 , 1);
-        if val - val.trunc() == 0.0{
-          self.content = (val as i64).to_string();
-        }
-
-        else{
-          self.content = val.to_string()
-
-        }
-
-      }
-      else if res.is_null() == false{
-        self.content = res.to_string();
-      }
-    }
-  }
-
   pub fn load_vars(& mut self){
 
     let mut salt : isize = 0;
@@ -196,18 +174,16 @@ impl StringVar{
       idx.sort(); 
 
       for start in idx{
-        let (name, content) = vars_pool.get(start).unwrap();
+        let (name, content) = vars_pool.get(start).as_ref().unwrap();
 
         let end = ( start + name.len() ) as isize + salt;
+
+        self.content.replace_range( (*start as isize + salt) as usize .. end as usize, format!("({})", content).as_str());
         
-        self.content.replace_range( (*start as isize + salt) as usize .. end as usize, content.as_str());
-        
-        salt += content.len() as isize;
+        salt += (content.len() + 2) as isize;
         salt -= name.len() as isize ;
 
       }
-      
-      self.eval_content();
       
     }
     
@@ -233,6 +209,6 @@ impl StringVar{
 
 impl IntoPy<PyObject> for StringVar {
   fn into_py(self, py: Python<'_>) -> PyObject {
-      self.content.into_py(py)
+    return self.content.trim().into_py(py);
   }
 }
