@@ -1,11 +1,70 @@
-# rebase
-  Lexer:
-    token
+# knhow text simbolys
 
-  Gramar:
-    b tree
+  * the symboly " * " is for comment / note
+  * the simboly " # " is for idication / index
+  * the simboly " | " is " or "
 
-  Costructor:
-    router
-    render:
-      b+ tree
+# knhow Digram simbolys
+  * the simboly "----> "    is a diagram direction
+  * the simboly "  ||  "    is " command " to back on end
+  * the simboly " |lp| "    is a loop
+  * the simboly " !    "    is a external referense
+  * the simboly " !!   "    is a internal referense
+  * the simboly " ??   "    is a possibly value
+
+|___________________________________________________________________________________________________|
+
+# syntax structure of wdlanguge:
+
+  # sections
+
+    Comments
+      simboly : *| ... |*
+
+      * inform any thing
+
+    Variables
+      simboly : -| line data |-
+
+      * addresing values to names ( keys )
+
+    Preset
+      simboly : .| line data && segments( layout )|.
+
+      * stack of atrbuts and layout
+        
+    Widget
+      simboly : <| line data && segments( atributes, commands) |>
+
+      * crate and define form and type of widgets
+      
+  Segments
+
+    Atributes:
+      simboly : {| line data |} 
+      
+      * use to set atrbuts
+    
+    Commands:
+      simboly : [| line data |]
+
+      * use to set inside Commands
+
+    Layout:
+      simboly : _| line data |_
+    
+
+  Line Data
+    name : value
+            |______ content, ...  | key name : value content, ...
+                    _______|_____   ____|____  ______|_______
+                   args(type list)     key         value
+                                   ____________|_______________
+                                      kwargs(type HashMap)
+                                          
+
+|___________________________________________________________________________________________________|
+
+# wdlang commands:
+  -Sd | --Src_Directorys  -> Path
+

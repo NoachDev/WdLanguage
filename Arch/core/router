@@ -1,0 +1,11 @@
+input = master dir ??(/home/user/wd_project | C:\Users\user\wd_project)
+
+                  input
+    Base directorys | ( Pages , Funtions ) -----> output (pages = [!page... ], funtions = [(dir, !!pages index)...] )
+                    |     ||      ||
+                    |     file-router
+                    |       | | -----> connection sctipt ( !!Pages )
+                    |       |
+                    |       | -----> !gramma -----> !lexer
+                    |
+Optional directorys | ( Images, Fonts, Components, ... ) -----> output ()

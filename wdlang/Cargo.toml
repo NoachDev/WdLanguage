@@ -1,0 +1,20 @@
+[package]
+name = "wdlang"
+version = "0.0.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "wdlang"
+
+[dependencies]
+
+pyo3 = { version = "0.17.3", features = ["extension-module", "generate-import-lib"] }
+
+lazy_static = "1.4"
+pcre2 = "0.2"
+
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+
+eval = "0.4"

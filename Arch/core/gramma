@@ -1,0 +1,17 @@
+input  = ??(
+  ( page_path = /home/user/wd_project/Pages/__init__.wd , funtion_path = /home/user/wd_project/Functions/__init__.py )
+                                                          or
+  ( page_path = C:\Users\user\wd_project\Pages\test\__init__.wd , funtion_path = C:\Users\user\wd_project\Functions\test\__init__.py)
+)
+
+          input
+            |
+            V
+  open(page_path) read line by line |lp| ---> close file ---> output(!WdTemplate)
+            |
+            V                                  
+  (text) -> lexer get tokens -> identify token | Object    ---> | segments ---> create scope(start), end_scope(end)
+                                               |                | sections ---> create scope(start), (create_element, end_scope)(end)
+                                               | 
+                                               | LineData  ---> append_data in current scope
+                                      
