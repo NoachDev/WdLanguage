@@ -3,7 +3,7 @@ This is repository to development language **WD**
 
 ***wd language is framework for create aplication with gui(tkinter | ...) and langaege(python | ...)***
 
-# next fictures
+# next features
 wdlang -> gui => tkinter
 wdlang -> manager => pytnon3
 
